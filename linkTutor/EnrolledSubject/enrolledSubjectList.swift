@@ -9,20 +9,27 @@
 //This code is working it is not showing anything because if the userId mathces then only it will show details as of now there is now details added in the database related to this id
 import SwiftUI
 import Firebase
-import FirebaseFirestore
+
+
 
 struct enrolledSubjectList: View {
     @StateObject var viewModel = RequestListViewModel()
     
     var body: some View {
         VStack {
-            Text("Enrolled Students")
+            Text("Enrolled Subject")
                 .font(.title)
                 .padding()
             let userId = Auth.auth().currentUser?.uid
+            
             VStack {
-                ForEach(viewModel.enrolledStudents.filter { $0.requestAccepted == 1 && $0.id == userId }, id: \.id) { student in
-                    enrolledSubjectCard(teacherName: student.teacherName, phoneNumber: student.teacherNumber , id: student.id, className: student.className)
+                ForEach(viewModel.enrolledStudents.filter { $0.studentUid == userId  && $0.requestAccepted == 1 }, id: \.id) { student in
+                    RequestSentCard(teacherName: student.teacherName, phoneNumber: student.teacherNumber, id: student.id, className: student.className)
+                }
+                .onAppear(){
+                    Task {
+                        await AuthViewModel().fetchUser()
+                    }
                 }
             }
             .onAppear {
@@ -43,14 +50,19 @@ struct EnrolledStudent: Identifiable {
     let requestSent : Int
     let className : String
     let teacherNumber : Int
+    let teacherUid : String
+    let skillUid : String
+    let startTime : Timestamp
+    let week : [String]
+    let enrolledDate : Timestamp
 }
 
 class RequestListViewModel: ObservableObject {
     @Published var enrolledStudents: [EnrolledStudent] = []
+    static let shared = RequestListViewModel()
     
     func fetchEnrolledStudents() {
         let db = Firestore.firestore()
-        
         
         db.collection("enrolledStudent").getDocuments { (querySnapshot, error) in
             if let error = error {
@@ -60,7 +72,7 @@ class RequestListViewModel: ObservableObject {
                 for document in querySnapshot!.documents {
                     let studentData = document.data()
                     if let teacherName = studentData["teacherName"] as? String,
-                       let id = studentData["id"] as? String,
+                       let id = document.documentID as? String,
                        let skillOwnerDetailsUid = studentData["skillOwnerDetailsUid"] as? String,
                        let studentName = studentData["studentName"] as? String,
                        let studentUid = studentData["studentUid"] as? String,
@@ -68,7 +80,17 @@ class RequestListViewModel: ObservableObject {
                        let requestAccepted = studentData["RequestAccepted"] as? Int ,
                        let requestSent = studentData["RequestSent"] as? Int ,
                         let className = studentData["className"] as? String ,
-                    let teacherNumber = studentData["teacherNumber"] as? Int {
+                    let teacherNumber = studentData["teacherNumber"] as? Int ,
+                        let teacherUid = studentData["teacherUid"] as? String ,
+                       
+                       let skillUid = studentData["skillUid"] as? String ,
+                       var startTime = studentData["startTime"] as? Timestamp  ,
+                       
+                       let  week = studentData["week"] as? [String],
+                       var enrolledDate = studentData["enrolledDate"] as? Timestamp
+                        
+                    
+                    {
                         let enrolledStudent = EnrolledStudent(id: id,
                                                               teacherName: teacherName,
                                                               skillOwnerDetailsUid: skillOwnerDetailsUid,
@@ -78,7 +100,12 @@ class RequestListViewModel: ObservableObject {
                                                               requestAccepted: requestAccepted,
                                                               requestSent: requestSent ,
                                                                  className:  className ,
-                                                                   teacherNumber: teacherNumber )
+                                                                   teacherNumber: teacherNumber,
+                                                              teacherUid: teacherUid,
+                                                              skillUid: skillUid,
+                                                              startTime: startTime ,
+                                                              week: week ,
+                                                              enrolledDate: enrolledDate)
                         enrolledStudentsData.append(enrolledStudent)
                     }
                 }
@@ -87,11 +114,11 @@ class RequestListViewModel: ObservableObject {
         }
     }
 
-    func updateEnrolled(requestAccepted : Int , requestDeleted : Int , id : String) {
+    func updateEnrolled(requestAccepted : Int , requestSent : Int , id : String) {
         let db = Firestore.firestore()
         
         let updatedData: [String: Any] = [
-            "ReqestDeleted" : requestDeleted ,
+            "RequestSent" : requestSent ,
             "RequestAccepted" : requestAccepted
         ]
         
@@ -123,6 +150,7 @@ class RequestListViewModel: ObservableObject {
         }
     }
 }
+
 
 #Preview {
     enrolledSubjectList()

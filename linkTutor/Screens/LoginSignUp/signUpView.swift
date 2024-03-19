@@ -27,7 +27,6 @@ struct signUpView: View {
                             .fontWeight(.bold)
                             .font(.system(size: 50).weight(.bold))
                             .fontDesign(.rounded)
-                            .foregroundColor(.maroonRed)
                         Text("To find your next tutor")
                             .fontWeight(.bold)
                             .font(AppFont.smallReg)
@@ -41,7 +40,7 @@ struct signUpView: View {
                         VStack{
                             NavigationLink(destination: loginView()){
                                 Text("Login")
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.white)
                                     .font(AppFont.mediumSemiBold)
                             }
                             Rectangle()
@@ -52,7 +51,7 @@ struct signUpView: View {
                         VStack{
                             NavigationLink(destination: signUpView()){
                                 Text("Sign up")
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.white)
                                     .font(AppFont.mediumSemiBold)
                             }
                             Rectangle()

@@ -21,17 +21,10 @@ class TeacherViewModel: ObservableObject {
     @Published var teacherDetails = [TeacherDetails]()
     private let db = Firestore.firestore()
     static let shared = TeacherViewModel()
-
-    func fetchTeacherDetails() {
-        db.collection("Teachers").getDocuments { snapshot, error in
-            if let error = error {
-                print("Error fetching teacher details: \(error.localizedDescription)")
-                return
-            }
-            guard let snapshot = snapshot else {
-                print("Snapshot is nil")
-                return
-            }
+    
+    func fetchTeacherDetails() async {
+        do {
+            let snapshot = try await db.collection("Teachers").getDocuments()
             
             DispatchQueue.main.async {
                 var details: [TeacherDetails] = []
@@ -48,7 +41,7 @@ class TeacherViewModel: ObservableObject {
                     let occupation = data["occupation"] as? String ?? ""
                     let phoneNumber = data["phoneNumber"] as? Int ?? 0
                     let imageUrl = data["imageUrl"] as? String ?? ""
-
+                    
                     let teacherDetail = TeacherDetails(id: id,
                                                        aboutParagraph: aboutParagraph,
                                                        city: city,
@@ -63,21 +56,18 @@ class TeacherViewModel: ObservableObject {
                 }
                 self.teacherDetails = details
             }
+        } catch {
+            print("Error fetching teacher details: \(error.localizedDescription)")
         }
     }
-
-    func fetchTeacherDetailsByID(teacherID: String) {
-        db.collection("Teachers").document(teacherID).getDocument { document, error in
-            if let error = error {
-                print("Error fetching teacher details: \(error.localizedDescription)")
-                return
-            }
-            guard let document = document, document.exists else {
-                print("Teacher document does not exist")
-                return
-            }
-            if let data = document.data() {
-                DispatchQueue.main.async {
+    
+    func fetchTeacherDetailsByID(teacherID: String) async {
+        do {
+            let document = try await db.collection("Teachers").document(teacherID).getDocument()
+            
+            // Check if the document exists
+            if document.exists {
+                if let data = document.data() {
                     let teacherDetail = TeacherDetails(
                         id: document.documentID,
                         aboutParagraph: data["aboutParagraph"] as? String ?? "",
@@ -90,40 +80,38 @@ class TeacherViewModel: ObservableObject {
                         phoneNumber: data["phoneNumber"] as? Int ?? 0 ,
                         imageUrl: data["imageUrl"] as? String ?? ""
                     )
-                    self.teacherDetails = [teacherDetail]
+                    
+                    // Update the teacherDetails property within the async context
+                    DispatchQueue.main.async {
+                        self.teacherDetails = [teacherDetail]
+                    }
                 }
+            } else {
+                print("Teacher document does not exist")
             }
+        } catch {
+            print("Error fetching teacher details: \(error.localizedDescription)")
         }
     }
     
-//    func retrievePhoto(path: String, completion: @escaping (UIImage?) -> Void) {
-//        let storageRef = Storage.storage().reference()
-//        let fileRef = storageRef.child(path)
-//        
-//        fileRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
-//            if let error = error {
-//                print("Error retrieving image: \(error.localizedDescription)")
-//                completion(nil) // Call the completion handler with nil indicating failure
-//                return
-//            }
-//            
-//            if let data = data, let image = UIImage(data: data) {
-//                DispatchQueue.main.async {
-//                    completion(image) // Call the completion handler with the retrieved image
-//                }
-//            } else {
-//                completion(nil) // Call the completion handler with nil indicating failure
-//            }
-//        }
-//    }
-
     
+    func loadImage(from urlString: String) async throws -> UIImage {
+        guard let url = URL(string: urlString) else {
+            throw NSError(domain: "InvalidURL", code: 0, userInfo: nil)
+        }
+        
+        let (data, _) = try await URLSession.shared.data(from: url)
+        guard let image = UIImage(data: data) else {
+            throw NSError(domain: "InvalidImageData", code: 0, userInfo: nil)
+        }
+        
+        return image
+    }
     
 }
 
 struct TeacherDetailsView: View {
     @ObservedObject var teacherViewModel = TeacherViewModel()
-    
 
     var body: some View {
         NavigationView {
@@ -139,20 +127,29 @@ struct TeacherDetailsView: View {
                         Text("Phone Number: \(teacherDetail.phoneNumber)")
                         Text("Location: Latitude: \(teacherDetail.location.latitude), Longitude: \(teacherDetail.location.longitude)")
                         Text("TeacherImage Link : \(teacherDetail.imageUrl)")
-
-                        // Asynchronously load the image
-                       
+                        
+                        AsyncImage(url: URL(string: teacherDetail.imageUrl)) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(width: 200, height: 200)
                     }
                     .padding()
                 }
             }
             .navigationBarTitle("Teacher Details")
             .onAppear {
-                teacherViewModel.fetchTeacherDetails()
+                Task {
+                    await teacherViewModel.fetchTeacherDetails()
+                }
             }
         }
     }
 }
+    
 
 // Preview
 struct TeacherDetailsView_Previews: PreviewProvider {
@@ -164,3 +161,25 @@ struct TeacherDetailsView_Previews: PreviewProvider {
 
 
 
+
+
+//    func retrievePhoto(path: String, completion: @escaping (UIImage?) -> Void) {
+//        let storageRef = Storage.storage().reference()
+//        let fileRef = storageRef.child(path)
+//
+//        fileRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
+//            if let error = error {
+//                print("Error retrieving image: \(error.localizedDescription)")
+//                completion(nil) // Call the completion handler with nil indicating failure
+//                return
+//            }
+//
+//            if let data = data, let image = UIImage(data: data) {
+//                DispatchQueue.main.async {
+//                    completion(image) // Call the completion handler with the retrieved image
+//                }
+//            } else {
+//                completion(nil) // Call the completion handler with nil indicating failure
+//            }
+//        }
+//    }

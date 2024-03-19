@@ -41,6 +41,15 @@ struct homepageComplete: View {
                     .tabItem {
                         Label("My Timetable", systemImage: "calendar")
                     }
+                RequestSent()
+                    .tabItem {
+                        Label("Request" , systemImage: "shared.with.you")
+                    }
+                
+                enrolledSubjectList()
+                    .tabItem {
+                        Label("Enrolled" , systemImage: "person.3.sequence")
+                    }
             }
             .accentColor(Color.accent)
         }

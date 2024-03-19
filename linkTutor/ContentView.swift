@@ -5,7 +5,7 @@ import FirebaseAuth
 struct ContentView: View {
     @EnvironmentObject var viewModel : AuthViewModel
     var body: some View {
-     
+        //Imageview() use this for image upload and retrival
         Group {
             if viewModel.userSession != nil {
                 homepageComplete()

@@ -16,13 +16,19 @@ struct RequestSent: View {
     
     var body: some View {
         VStack {
-            Text("Enrolled Students")
+            Text("Request")
                 .font(.title)
                 .padding()
             let userId = Auth.auth().currentUser?.uid
+            
             VStack {
-                ForEach(viewModel.enrolledStudents.filter { $0.requestSent == 1 && $0.id == userId }, id: \.id) { student in
-                    RequestSentCard(teacherName: student.teacherName, phoneNumber: student.teacherNumber , id: student.id, className: student.className)
+                ForEach(viewModel.enrolledStudents.filter { $0.studentUid == userId  && $0.requestSent == 1 }, id: \.id) { student in
+                    enrolledSubjectCard(teacherName: student.teacherName, phoneNumber: student.teacherNumber, id: student.id, className: student.className)
+                }
+                .onAppear(){
+                    Task {
+                        await AuthViewModel().fetchUser()
+                    }
                 }
             }
             .onAppear {

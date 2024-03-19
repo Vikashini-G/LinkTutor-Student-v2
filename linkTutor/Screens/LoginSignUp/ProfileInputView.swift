@@ -1,170 +1,190 @@
 import SwiftUI
+import Firebase
+import FirebaseAuth
+import FirebaseStorage
 
 struct ProfileInputView: View {
-    @State  var image: Image?
-    @State  var name: String = ""
-    @State  var email: String = ""
-    @State  var password: String = ""
-    @State  var phoneNumber: String = ""
-    @State  var about: String = ""
-    @State  var showImagePicker: Bool = false
-  //  @State private var location : String
+    
+    @EnvironmentObject var viewModel: AuthViewModel
+  
+    @State private var fullName: String = ""
+    @State private var email: String = ""
+    @State private var city: String = ""
+    @State private var phoneNumber: Int = 91
+    @State private var about: String = ""
+    @State private var occupation : String = ""
+    @State private var age : String = ""
+
+  
+    @State private var location: GeoPoint = GeoPoint(latitude: 12.8096, longitude: 80.8097)
+    
+    @State var isPickerShowing = false
+    @State var selectedImage: UIImage?
+    
+    @State private var isProfileIsSubmit = false
     
     var body: some View {
-        
-                VStack {
-                    VStack{
-                        HStack{
-                            Text("Edit Profile ")
-                                .font(AppFont.largeBold)
-                            Spacer()
-                        }
-                        // Profile Photo
-//                            if let image = image {
-//                                image
-//                                    .resizable()
-//                                    .scaledToFit()
-//                                    .frame(width: 100, height: 100)
-//                                    .cornerRadius(50.0)
-//                            } else {
-//                                Image(systemName: "person.circle.fill")
-//                                    .resizable()
-//                                    .foregroundColor(.gray)
-//                                    .frame(width: 90, height: 90)
-//                                    .cornerRadius(50.0)
-//
-//                            }
-                            
-                        Button(action: {
-                                showImagePicker = true
-                        }) {
-                            if let image = image {
-                                image
-                                    .resizable()
-                                    .frame(width: 100, height: 100)
-                                    .cornerRadius(50.0)
-                            } else {
-                                Image(systemName: "person.circle.fill")
-                                    .resizable()
-                                    .foregroundColor(.gray)
-                                    .frame(width: 90, height: 90)
-                                    .cornerRadius(50.0)
-                            
-                            }
-                            //Text("Change profile photo").foregroundColor(.blue)
-                        }
-                        .sheet(isPresented: $showImagePicker) {
-                            ImagePicker(image: $image)
-                        }
-                    }
-                    .padding()
-                    
-                    if image != nil {
-                        
+       
+        NavigationStack{
+            
+            VStack {
+                VStack{
+                    HStack{
+                        Text("Edit Profile ")
+                            .font(AppFont.largeBold)
+                        Spacer()
                     }
                     
-                    List{
-                        Section(header: Text("")){
-                            // Name TextField
-                            TextField("Name", text: $name)
-                            .listRowBackground(Color.elavated)
-                            
-                            // About TextField
-                            TextField("About", text: $about)
-                            .listRowBackground(Color.elavated)
+                    
+                    Button(action: {
+                        isPickerShowing = true
+                    }) {
+                        if let image = selectedImage {
+                            Image(uiImage: image)
+                                .resizable() // Call resizable on Image, not UIImage
+                                .frame(width: 100, height: 100)
+                                .cornerRadius(50.0)
+                        } else {
+                            Image(systemName: "person.circle.fill")
+                                .resizable()
+                                .foregroundColor(.gray)
+                                .frame(width: 90, height: 90)
+                                .cornerRadius(50.0)
                         }
-                        Section(header: Text("")){
-                            // Email TextField
-                            TextField("Email Address", text: $email)
+                    }
+                    .sheet(isPresented: $isPickerShowing , onDismiss: nil) {
+                        ImagePicker(selectedImage: $selectedImage, isPickerShowing: $isPickerShowing)
+                    }
+                }
+                .padding()
+                
+                List{
+                    Section(header: Text("")){
+                        // Name TextField
+                        TextField("Name", text: $fullName)
                             .listRowBackground(Color.elavated)
                         
-                            // Phone Number TextField
-                            TextField("Phone Number", text: $phoneNumber)
+                        // About TextField
+                        TextField("About", text: $about)
                             .listRowBackground(Color.elavated)
-                        }
-                        Section(header: Text("")){
-                            // Password SecureField
-                            SecureField("Password", text: $password)
+                        
+                        // Email TextField
+                        TextField("Email Address", text: $email)
                             .listRowBackground(Color.elavated)
-                        }
+                            .autocapitalization(.none)
+                        
+                        TextField("City", text: $city)
+                            .listRowBackground(Color.elavated)
+                        
+                        
+                        
+                        TextField("Age", text: $age)
+                            .listRowBackground(Color.elavated)
+                        TextField("Occupation", text: $occupation)
+                            .listRowBackground(Color.elavated)
                     }
-                    .listStyle(.plain)
-                    .background(.clear)
                     
-                    // Submit Button
-                    Button(action: submitProfileData) {
-                        Text("Submit")
+                    Section(header: Text("Phone Number")){
+                        // Password SecureField
+                        TextField("PhoneNumber", value: $phoneNumber, formatter: NumberFormatter())
+                            .keyboardType(.numberPad)
+                    }
+                    
+                    
+                    
+                }
+                .listStyle(.plain)
+                .background(.clear)
+                NavigationLink(destination: homepageComplete(), isActive: $isProfileIsSubmit) {
+                    Button(action: {
+                        // Handle add class action
+                        viewModel.updateStudentProfile(fullName: fullName,
+                                                       email: email,
+                                                       aboutParagraph: about,
+                                                       age: age,
+                                                       city: city,
+                                                       location: location,
+                                                       occupation: occupation,
+                                                       phoneNumber: phoneNumber ,
+                                                       selectedImage: selectedImage)
+                        // Activate the navigation to TeacherHomePage
+                        
+                        
+                        isProfileIsSubmit = true
+                    }) {
+                        Text("Submit Profile")
+                            .foregroundColor(.white)
                             .font(AppFont.mediumSemiBold)
-                            .foregroundStyle(Color.black)
-                            .frame(width: 200, height: 35)
                             .padding()
-                            .background(Color.accent)
-                            .cornerRadius(50)
+                            .background(Color.blue)
+                            .cornerRadius(20)
                     }
-                    
-                } //v end
-                .background(Color.background)
-        
-    }
-        
-        func submitProfileData() {
-            // Handle submission logic here
-            print("Name: \(name)")
-            print("Email: \(email)")
-            print("Password: \(password)")
-            print("Phone Number: \(phoneNumber)")
-            print("About: \(about)")
-            // You can perform additional actions here, such as validation or sending data to a server.
+                }
+               
+                // Submit Button
+               
+                
+            } //v end
+            .background(Color.background)
+            
         }
     }
-
-
-#Preview {
-    ProfileInputView()
+        
     }
-//struct ProfileInputView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        ProfileInputView()
-//    }
-//}
+
 
 
 
 
 struct ImagePicker: UIViewControllerRepresentable {
-    @Binding var image: Image?
-    @Environment(\.presentationMode) var presentationMode
-
-    class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
-        let parent: ImagePicker
-
-        init(parent: ImagePicker) {
-            self.parent = parent
-        }
-
-        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            if let uiImage = info[.originalImage] as? UIImage {
-                parent.image = Image(uiImage: uiImage)
-            }
-
-            parent.presentationMode.wrappedValue.dismiss()
-        }
-
-        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            parent.presentationMode.wrappedValue.dismiss()
-        }
+    
+    @Binding var selectedImage: UIImage?
+    @Binding var isPickerShowing: Bool
+    
+    func makeUIViewController(context: Context) -> some UIViewController {
+        let imagePicker1 = UIImagePickerController()
+        imagePicker1.sourceType = .photoLibrary
+        imagePicker1.delegate = context.coordinator
+        
+        return imagePicker1
     }
-
+    
+    func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+    }
+    
     func makeCoordinator() -> Coordinator {
-        Coordinator(parent: self)
+        return Coordinator(self)
     }
-
-    func makeUIViewController(context: Context) -> UIImagePickerController {
-        let picker = UIImagePickerController()
-        picker.delegate = context.coordinator
-        picker.sourceType = .photoLibrary
-        return picker
-    }
-
-    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    
 }
+
+class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate{
+    
+    var parent: ImagePicker
+    init(_ picker: ImagePicker){
+        self.parent = picker
+    }
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        print("Image selected")
+        if let image = info[UIImagePickerController.InfoKey.originalImage] as?
+            UIImage{
+            DispatchQueue.main.async {
+                self.parent.selectedImage = image
+            }
+        }
+        parent.isPickerShowing = false
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        print("Cancelled")
+        parent.isPickerShowing = false
+    }
+}
+
+
+#Preview {
+    ProfileInputView()
+    }
+
+
+

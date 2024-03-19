@@ -32,14 +32,9 @@ struct allPopularCard: View {
                             NavigationLink(destination: listClassesScreen(skillType: skillType)){
                             popularClassCardV(skillId: skillTypeName.prefix(1).capitalized + skillTypeName.dropFirst(), iconName: "book")
                            
-                                    
                             }
-                        
                             
                         }
-            
-                        
-                        
                         
                     }
                 }
@@ -55,7 +50,7 @@ struct allPopularCard: View {
 }
 
 #Preview {
-    allPopularCard()
+    allPopularCardH()
 }
 
 struct popularClassCardV: View{
@@ -92,4 +87,38 @@ struct popularClassCardV: View{
 }
 
 
+struct allPopularCardH: View {
+    @ObservedObject var skillViewModel = SkillViewModel()
+    @State private var selectedSkillType: SkillType?
+    
+    
+   
+    
+    var body: some View {
+        NavigationStack{
+            VStack{
+              
+                ScrollView(){
+                    HStack(spacing : 10){
+                        ForEach(skillViewModel.skillTypes) { skillType in
+                            let skillTypeName : String = skillType.id
+                            NavigationLink(destination: listClassesScreen(skillType: skillType)){
+                            popularClassCardV(skillId: skillTypeName.prefix(1).capitalized + skillTypeName.dropFirst(), iconName: "book")
+                           
+                            }
+                            
+                        }
+                        
+                    }
+                }
+            }
+            .padding()
+            .edgesIgnoringSafeArea(.bottom)
+            .background(Color.background)
+            .environment(\.colorScheme, .dark)
+     
+                
+            }
+        }
+}
 

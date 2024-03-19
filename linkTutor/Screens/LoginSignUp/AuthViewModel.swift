@@ -27,9 +27,12 @@ class AuthViewModel: ObservableObject {
     
     // This is our user
     @Published var currentUser: User?
+   
     
     init() {
     self.userSession = Auth.auth().currentUser
+      
+       
         Task {
             await fetchUser()
         }
@@ -130,102 +133,104 @@ class AuthViewModel: ObservableObject {
     
     
     //To add New Review
-     func addReview(comment: String, documentUid : String , ratingStar : Int , skillOwnerDetailsUid : String , skillUid : String, teacherUid : String , time : String , className : String ) {
-         
-                 let db = Firestore.firestore()
-         
-                 Task {
-                     await fetchUser()
-                 }
-                 let userId = Auth.auth().currentUser!.uid
-         
-                 // Create a dictionary representing the updated data
-                 let data: [String: Any] = [
-                     "academy": comment,
-                     "id": documentUid,
-                      "className" : className,
-                     "ratingStar": ratingStar,
-                     "skillOwnerDetailsUid": skillOwnerDetailsUid,
-                     "skillUid": skillUid,
-                     "teacherUid": teacherUid,
-                     "time": time,
-                     "userId": userId
-                 ]
-         
-         // Add the document to review Collection
-         db.collection("review").addDocument(data: data){ error in
-             if let error = error {
-                 print("Error adding document: \(error.localizedDescription)")
-             } else {
-                // TeacherHomePage()
-                 print("Review added successfully to \(className) collection with ")
-             }
-         }
-     }
+    func addReview(comment: String, documentUid: String, ratingStar: Int, skillOwnerDetailsUid: String, skillUid: String, teacherUid: String, time: String, className: String) async throws {
+        let db = Firestore.firestore()
+
+        // Fetch user asynchronously
+        await fetchUser()
+
+        guard let userId = Auth.auth().currentUser?.uid else {
+            throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Current user not found"])
+        }
+
+        // Create a dictionary representing the review data
+        let data: [String: Any] = [
+            "academy": comment,
+            "id": documentUid,
+            "className": className,
+            "ratingStar": ratingStar,
+            "skillOwnerDetailsUid": skillOwnerDetailsUid,
+            "skillUid": skillUid,
+            "teacherUid": teacherUid,
+            "time": time,
+            "userId": userId
+        ]
+
+        do {
+            // Add the document to the "review" collection
+            try await db.collection("review").addDocument(data: data)
+            print("Review added successfully to \(className) collection")
+        } catch {
+            print("Error adding document: \(error.localizedDescription)")
+            throw error
+        }
+    }
+
      
      //To delete Review
      
-     func deleteReview(userId: String, skillOwnerDetailsUid: String, teacherUid: String) {
-         let db = Firestore.firestore()
+    func deleteReview(userId: String, skillOwnerDetailsUid: String, teacherUid: String) async throws {
+        let db = Firestore.firestore()
 
-         db.collection("review")
-             .whereField("userId", isEqualTo: userId)
-             .whereField("skillOwnerDetailsUid", isEqualTo: skillOwnerDetailsUid)
-             .whereField("teacherUid", isEqualTo: teacherUid)
-             .getDocuments { (querySnapshot, error) in
-                 if let error = error {
-                     print("Error fetching documents: \(error)")
-                 } else {
-                     for document in querySnapshot!.documents {
-                         db.collection("review").document(document.documentID).delete { error in
-                             if let error = error {
-                                 print("Error deleting document: \(error.localizedDescription)")
-                             } else {
-                                 print("Review deleted successfully")
-                             }
-                         }
-                     }
-                 }
-             }
-     }
+        do {
+            // Fetch documents asynchronously
+            let querySnapshot = try await db.collection("review")
+                .whereField("userId", isEqualTo: userId)
+                .whereField("skillOwnerDetailsUid", isEqualTo: skillOwnerDetailsUid)
+                .whereField("teacherUid", isEqualTo: teacherUid)
+                .getDocuments()
+
+            // Delete each document found
+            for document in querySnapshot.documents {
+                try await db.collection("review").document(document.documentID).delete()
+                print("Review deleted successfully")
+            }
+        } catch {
+            print("Error deleting documents: \(error.localizedDescription)")
+            throw error
+        }
+    }
+
 
      
      
   //    To Update Review
-     func updateReview(comment: String, documentUid : String , ratingStar : Int , skillOwnerDetailsUid : String , skillUid : String, teacherUid : String , time : String , className : String ) {
+    func updateReview(comment: String, documentUid: String, ratingStar: Int, skillOwnerDetailsUid: String, skillUid: String, teacherUid: String, time: String, className: String) async throws {
+        let db = Firestore.firestore()
 
-         let db = Firestore.firestore()
-         
-         Task {
-             await fetchUser()
-         }
-         let userId = Auth.auth().currentUser!.uid
-         
-         // Create a dictionary representing the updated data
-         let updatedData: [String: Any] = [
-             "comment": comment,
-             "id": documentUid,
-             "ratingStar": ratingStar,
-             "skillOwnerDetailsUid": skillOwnerDetailsUid,
-             "skillUid": skillUid,
-             "teacherUid": teacherUid,
-             "time": time,
-             "userId": userId
-         ]
-         
-         // Update the document in the "skillOwnerDetails" collection with the provided documentId
-         db.collection("review").document(documentUid).setData(updatedData, merge: true) { error in
-             if let error = error {
-                 print("Error updating document: \(error.localizedDescription)")
-             } else {
-                 print("Document updated successfully")
-             }
-         }
-     }
+        // Fetch user asynchronously
+        await fetchUser()
+
+        guard let userId = Auth.auth().currentUser?.uid else {
+            throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Current user not found"])
+        }
+
+        // Create a dictionary representing the updated data
+        let updatedData: [String: Any] = [
+            "comment": comment,
+            "id": documentUid,
+            "ratingStar": ratingStar,
+            "skillOwnerDetailsUid": skillOwnerDetailsUid,
+            "skillUid": skillUid,
+            "teacherUid": teacherUid,
+            "time": time,
+            "userId": userId
+        ]
+
+        do {
+            // Update the document in the "review" collection with the provided documentUid
+            try await db.collection("review").document(documentUid).setData(updatedData, merge: true)
+            print("Document updated successfully")
+        } catch {
+            print("Error updating document: \(error.localizedDescription)")
+            throw error
+        }
+    }
+
     
     //When Enroll Now button will be clicked this function will be called
     
-    func addEnrolledStudent(teacherName: String , skillOwnerDetailsUid: String, studentName: String, studentUid: String, studentNumber: Int, requestAccepted: Int, requestSent: Int, className: String, teacherNumber: Int) {
+    func addEnrolledStudent(teacherName: String , skillOwnerDetailsUid: String, studentName: String, studentUid: String, studentNumber: Int, requestAccepted: Int, requestSent: Int, className: String, teacherNumber: Int , teacherUid : String , skillUid : String , startTime : Timestamp , week : [String]) async throws {
         let db = Firestore.firestore()
         
         let data: [String: Any] = [
@@ -237,17 +242,88 @@ class AuthViewModel: ObservableObject {
             "RequestAccepted": requestAccepted,
             "RequestSent": requestSent,
             "className": className,
-            "teacherNumber": teacherNumber
+            "teacherNumber": teacherNumber,
+            "teacherUid" : teacherUid,
+            "skillUid" : skillUid,
+            "startTime" : startTime,
+            "week" : week ,
+            "enrolledDate" : Date()
         ]
         
-        db.collection("enrolledStudent").addDocument(data: data){ error in
+        do {
+            _ = try await db.collection("enrolledStudent").addDocument(data: data)
+            print("Document added successfully")
+        } catch {
+            print("Error adding document: \(error.localizedDescription)")
+            throw error
+        }
+    }
+
+    func updateStudentProfile(fullName: String, email: String, aboutParagraph: String, age: String, city: String, location: GeoPoint, occupation: String, phoneNumber: Int, selectedImage: UIImage?) {
+        let db = Firestore.firestore()
+        let userId = Auth.auth().currentUser!.uid
+        
+        guard let imageData = selectedImage?.jpegData(compressionQuality: 0.8) else {
+            print("No image data available")
+            return
+        }
+        
+        let storageRef = Storage.storage().reference()
+        let fileRef = storageRef.child("students/\(userId).jpg")
+        
+        let uploadTask = fileRef.putData(imageData, metadata: nil) { metadata, error in
             if let error = error {
-                print("Error adding document: \(error.localizedDescription)")
-            } else {
-                print("Document added successfully")
+                print("Error uploading image: \(error.localizedDescription)")
+                return
+            }
+            
+            print("Image has been uploaded")
+            
+            fileRef.downloadURL { url, error in
+                if let error = error {
+                    print("Error getting download URL: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let downloadURL = url else {
+                    print("Download URL not found")
+                    return
+                }
+                
+                // Update user document with profile data and image URL
+                let userData: [String: Any] = [
+                    "email": email,
+                    "fullName": fullName,
+                    "aboutParagraph": aboutParagraph,
+                    "age": age,
+                    "city": city,
+                    "location": location,
+                    "occupation": occupation,
+                    "phoneNumber": phoneNumber,
+                    "imageUrl": downloadURL.absoluteString
+                ]
+                
+                db.collection("users").document(userId).setData(userData, merge: true) { error in
+                    if let error = error {
+                        print("Error updating user document: \(error.localizedDescription)")
+                    } else {
+                        print("User document updated successfully")
+                    }
+                }
             }
         }
     }
 
     
 }
+
+
+//do {
+//    if let fullName = try await getFullName(forUserId: "yourUserId") {
+//        print("Full Name: \(fullName)")
+//    } else {
+//        print("Full Name not found.")
+//    }
+//} catch {
+//    print("Error: \(error.localizedDescription)")
+//}

@@ -2,8 +2,8 @@ import SwiftUI
 
 struct quickInfoCard: View{
     var tutorAddress: String
-    var tutionDays: String
-    var tutionTiming: String
+    var startTime: String
+    var endTime: String
     var tutionFee: Int
     var body: some View{
         VStack{
@@ -29,9 +29,9 @@ struct quickInfoCard: View{
                     .font(AppFont.smallSemiBold)
 //                    .foregroundColor(.gray)
                 HStack{
-                    Text("\(tutionDays)")
+                    Text("\(startTime)")
                         .padding(.trailing, 10)
-                    Text("\(tutionTiming)")
+                    Text("\(endTime)")
                     Spacer()
                 }
             }
@@ -57,5 +57,5 @@ struct quickInfoCard: View{
 }
 
 #Preview {
-    quickInfoCard(tutorAddress: "Fake street name, New York", tutionDays: "Mon-Wed", tutionTiming: "4-5 pm", tutionFee: 2000)
+    quickInfoCard(tutorAddress: "Fake street name, New York", startTime: "4:00", endTime: "5:00 pm", tutionFee: 2000)
 }

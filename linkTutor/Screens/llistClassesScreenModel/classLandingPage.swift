@@ -1,32 +1,47 @@
-
 import SwiftUI
 import Firebase
 import FirebaseAuth
 import FirebaseFirestore
 
-
 struct classLandingPage: View {
     var teacherUid: String
     var academy: String
-    var skillUid : String
-    var skillOwnerUid : String
-    var className : String
+    var skillUid: String
+    var skillOwnerUid: String
+    var className: String
+    var startTime : Timestamp
+    var endTime : Timestamp
+    var week : [String]
+  
+
    
+    //This variable to automatically refresh page
+
+    
+    @State private var startTimeString = ""
+    @State private var endTimeString = ""
+    
+    @ObservedObject var studentViewModel = StudentViewModel.shared
+    
     @State var showingUpdate = false
     @ObservedObject var teacherViewModel = TeacherViewModel.shared
     @ObservedObject var reviewViewModel = ReviewViewModel()
-    @EnvironmentObject var viewModel : AuthViewModel
+    @EnvironmentObject var viewModel: AuthViewModel
     
+    
+    
+
+
     var body: some View {
         NavigationStack {
             ZStack {
                 VStack {
-                    //Header
+                    // Header
                     HStack {
                         VStack(alignment: .leading) {
                             Text("\(academy)")
                                 .font(AppFont.largeBold)
-                            
+
                             if let teacherDetails = teacherViewModel.teacherDetails.first {
                                 Text("by \(teacherDetails.fullName)")
                                     .font(AppFont.mediumReg)
@@ -37,13 +52,13 @@ struct classLandingPage: View {
                         }
                         Spacer()
                     }
-                    
+
                     ScrollView(.vertical) {
                         if !teacherViewModel.teacherDetails.isEmpty {
                             // View content using teacherViewModel.teacherDetails
                             if let teacherDetails = teacherViewModel.teacherDetails.first {
-                                //Rating and Review
-                                HStack{
+                                // Rating and Review
+                                HStack {
                                     Text("4.0 ⭐️")
                                         .font(AppFont.smallReg)
                                         .padding([.top, .bottom], 4)
@@ -58,31 +73,53 @@ struct classLandingPage: View {
                                         .foregroundColor(.gray)
                                     Spacer()
                                 }
-                                
-                                
-                                //Enroll button
-                                HStack{
-                                    let usr = Auth.auth().currentUser?.uid
-                                    let name = Auth.auth().currentUser?.displayName
-                                    let number = Auth.auth().currentUser?.phoneNumber
 
+                                // Enroll button
+                              
+                                HStack {
+                                   //Enroll button link
+                                    
                                     NavigationLink(destination: requestConfirmation(), isActive: $showingUpdate) {
                                         Button(action: {
-                                            print("Enrollment action")
-                                            
-                                            // Check if number is available and convert it to an Int safely
-                                            let phoneNumber = number.flatMap { Int($0) } ?? 0
-                                            
-                                            viewModel.addEnrolledStudent(teacherName: "",
-                                                                          skillOwnerDetailsUid: skillOwnerUid,
-                                                                          studentName: name ?? "",
-                                                                          studentUid: usr ?? "",
-                                                                          studentNumber: phoneNumber,
-                                                                          requestAccepted: 0,
-                                                                          requestSent: 1,
-                                                                          className: className,
-                                                                          teacherNumber: teacherDetails.phoneNumber)
-                                            showingUpdate = true
+                                              print("Enrollment action")
+
+                                                var userId = Auth.auth().currentUser?.uid
+                                                Task {
+                                                    await studentViewModel.fetchStudentDetailsByID(studentID: userId!)
+                                             
+
+                                                // Wait for userDetails to be populated
+                                                while studentViewModel.userDetails.isEmpty {
+                                                    await Task.sleep(100) // Adjust the sleep duration as needed
+                                                }
+
+                                                // Now userDetails should have at least one element
+                                                if let userDetails = studentViewModel.userDetails.first {
+                                                    do {
+                                                        try await viewModel.addEnrolledStudent(teacherName: teacherDetails.fullName,
+                                                                                                skillOwnerDetailsUid: skillOwnerUid,
+                                                                                                studentName: userDetails.fullName,
+                                                                                                studentUid: userId ?? "",
+                                                                                                studentNumber: userDetails.phoneNumber,
+                                                                                                requestAccepted: 0,
+                                                                                                requestSent: 1,
+                                                                                                className: className,
+                                                                                                teacherNumber: teacherDetails.phoneNumber,
+                                                                                                teacherUid: teacherUid ,
+                                                                                               skillUid:  skillUid,
+                                                                                               startTime: startTime,
+                                                                                               week: week
+                                                                                               
+                                                                                              
+                                                        )
+                                                        showingUpdate = true
+                                                    } catch {
+                                                        print("Error adding enrolled student: \(error.localizedDescription)")
+                                                    }
+                                                } else {
+                                                    print("No user details fetched yet")
+                                                }
+                                            }
                                         }) {
                                             Text("Enroll now")
                                                 .font(AppFont.mediumReg)
@@ -95,34 +132,34 @@ struct classLandingPage: View {
                                         .padding([.top, .bottom], 10)
                                     }
 
-                                    
-                                    
                                     Spacer()
                                 }
                                 
-                                //quickInfoBox
-                                
-                                quickInfoCard(tutorAddress: "\(teacherDetails.city)" , tutionDays: "\(30)", tutionTiming: "4-5 pm", tutionFee: 2000)
-                                    .padding([.top,.bottom], 10)
-                                
-                                HStack{
-                                    HStack{
+                                if let teacherDetails = teacherViewModel.teacherDetails.first {
+                                    quickInfoCard(tutorAddress: "\(teacherDetails.city)", startTime: startTimeString , endTime: endTimeString, tutionFee: 2000 )
+                                                                       .padding([.top, .bottom], 10)
+                                } else {
+                                    Text("Loading...")
+                                        .font(AppFont.mediumReg)
+                                }
+                                // QuickInfoBox
+                              
+                               //Phone fill , message fill code
+                                HStack {
+                                    HStack {
                                         Image(systemName: "phone.fill")
                                             .font(.system(size: 17))
-                                        
-                                        
+
                                         Text("\(teacherDetails.phoneNumber)")
                                             .font(AppFont.actionButton)
-                                        
-                                        
                                     }
                                     .padding([.top, .bottom], 6)
                                     .padding([.leading, .trailing], 12)
                                     .background(Color.phoneAccent)
                                     .foregroundStyle(Color.black)
                                     .cornerRadius(50)
-                                    
-                                    HStack{
+
+                                    HStack {
                                         Image(systemName: "message.fill")
                                             .font(.system(size: 17))
                                         Text("iMessage")
@@ -135,16 +172,15 @@ struct classLandingPage: View {
                                     .cornerRadius(50)
                                     Spacer()
                                 }
-                                .padding([.top,.bottom], 10)
-                                
-                                
-                                HStack{
-                                    VStack(alignment: .leading){
+                                .padding([.top, .bottom], 10)
+
+                                HStack {
+                                    VStack(alignment: .leading) {
                                         Text("Mode")
                                             .font(AppFont.smallSemiBold)
                                             .padding(.bottom, 5)
-                                        VStack{
-                                            HStack{
+                                        VStack {
+                                            HStack {
                                                 Image(systemName: "checkmark")
                                                     .font(.system(size: 20))
                                                 Text("Online")
@@ -152,7 +188,7 @@ struct classLandingPage: View {
                                                     .foregroundColor(.gray)
                                                 Spacer()
                                             }.padding(5)
-                                            HStack{
+                                            HStack {
                                                 Image(systemName: "checkmark")
                                                     .font(.system(size: 20))
                                                 Text("Offline")
@@ -164,36 +200,24 @@ struct classLandingPage: View {
                                     }
                                     Spacer()
                                 }
-                                
-                                
-                                HStack{
-                                    VStack(alignment: .leading){
+
+                                HStack {
+                                    VStack(alignment: .leading) {
                                         Text("Reviews")
                                             .font(AppFont.smallSemiBold)
                                             .padding(.bottom, 5)
-                                        
-                                        ForEach(reviewViewModel.reviewDetails.filter { $0.skillUid == "\(skillUid)" && $0.teacherUid == "\(teacherUid)"  &&  $0.skillOwnerDetailsUid == "\(skillOwnerUid)"}) { teacherDetail in
+
+                                        ForEach(reviewViewModel.reviewDetails.filter { $0.skillUid == "\(skillUid)" && $0.teacherUid == "\(teacherUid)" && $0.skillOwnerDetailsUid == "\(skillOwnerUid)" }) { teacherDetail in
+                                            
                                             if let formattedDate = formatDate(teacherDetail.time) {
-                                                reviewCard(reviewRating: teacherDetail.ratingStar , review: "\(teacherDetail.comment)", time : "\(formattedDate)")
-                                                
+                                                reviewCard(reviewRating: teacherDetail.ratingStar , review: "\(teacherDetail.comment)", time: "\(formattedDate)")
                                             }
-                                            
-                                            
-                                        }
-                                        //                                    reviewCard(reviewRating: "⭐️⭐️⭐️⭐️⭐️", review: "Loved taking their classes!! ", time:  "20 march")
-                                        //                                    reviewCard(reviewRating: "⭐️⭐️⭐️⭐️⭐️", review: "Loved taking their classes!! ", time:  "20 march")
-                                        //                                    reviewCard(reviewRating: "⭐️⭐️⭐️⭐️⭐️", review: "Loved taking their classes!! ", time:  "20 march")
-                                        
-                                        
-                                        
-                                        
+                                        }// End of For loop
                                     }
-                                    .padding([.top,.bottom], 10)
+                                    .padding([.top, .bottom], 10)
                                     Spacer()
                                 }
-                                
                                 Spacer()
-                                
                             } else {
                                 Text("Loading...")
                                     .font(AppFont.mediumReg)
@@ -204,35 +228,52 @@ struct classLandingPage: View {
                         }
                     }
                     .padding()
-                    
-                    
-                    
                 }
                 .background(Color.background)
                 .onAppear {
-                    
-                    //                reviewViewModel.fetchReviewDetailsByID(teacherID: teacherUid, skillUid: skillUid)
-                    teacherViewModel.fetchTeacherDetailsByID(teacherID: teacherUid)
-                    
-                    
+                    fetchTimes()
+                    DispatchQueue.main.async {
+                        Task {
+                            await teacherViewModel.fetchTeacherDetailsByID(teacherID: teacherUid)
+                        }
+                    }
                 }
             }
         }
         
+        .onReceive(teacherViewModel.$teacherDetails) { _ in
+            fetchTimes() // Call fetchTimes() when teacherDetails changes
+        }
+       
+      
     }
+    
+        
+       
+
     func formatDate(_ date: Date) -> String? {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd MMMM YYYY" // Date format: dayOfMonth month
         return dateFormatter.string(from: date)
     }
     
+    private func fetchTimes() {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "HH:mm"
+
+            let startDate = startTime.dateValue()
+            let endDate = endTime.dateValue()
+
+            startTimeString = dateFormatter.string(from: startDate)
+            endTimeString = dateFormatter.string(from: endDate)
+        }
+    
+   
+    
 }
 
-
-
-
 #Preview {
-    classLandingPage(teacherUid: "1", academy: "Unknown", skillUid: "dance", skillOwnerUid: "1" , className: "ClassName")
+    classLandingPage( teacherUid: "Teacher Uid", academy: "Academy", skillUid: "SkillUid", skillOwnerUid: "SkillOwnerUid", className: "ClassName", startTime: Timestamp(), endTime: Timestamp(), week: ["week"] )
 }
 
 

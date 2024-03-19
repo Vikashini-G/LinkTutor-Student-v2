@@ -9,12 +9,14 @@
 
 
 import SwiftUI
+import Firebase
 import FirebaseFirestore
-import FirebaseFirestoreSwift
-import Combine
+
+
+
 
 // Define your data models
-struct SkillType: Identifiable, Equatable {
+struct SkillType: Identifiable, Equatable , Hashable {
     var id: String
     var skillOwnerDetails: [SkillOwnerDetail] = []
     var isAscendingOrder: Bool = true
@@ -24,86 +26,75 @@ struct SkillType: Identifiable, Equatable {
     }
 }
 
-struct SkillOwnerDetail: Identifiable, Codable {
+struct SkillOwnerDetail: Identifiable, Codable , Hashable {
     var id: String
     var academy: String
     var className: String
     var documentUid: String
-    var price: Double
+    var price: Int
     var skillUid: String
     var teacherUid: String
-    var week :  [String]
-    var startTime : String
-    var endTime : String
-    var mode : String
+    var week: [String]
+    var startTime: Timestamp // Corrected type
+    var endTime: Timestamp // Corrected type
+    var mode: String
 }
 
 // Create a view model to fetch the data
 class SkillViewModel: ObservableObject {
     @Published var skillTypes: [SkillType] = []
-    private var cancellables = Set<AnyCancellable>()
+    private let db = Firestore.firestore()
     
     init() {
         fetchSkillTypes()
     }
     
     func fetchSkillTypes() {
-        let db = Firestore.firestore()
-        db.collection("skillType").getDocuments { snapshot, error in
-            if let error = error {
+        Task {
+            do {
+                let querySnapshot = try await db.collection("skillType").getDocuments()
+                DispatchQueue.main.async {
+                    self.skillTypes = querySnapshot.documents.map { document in
+                        SkillType(id: document.documentID)
+                    }
+                }
+            } catch {
                 print("Error fetching skill types: \(error.localizedDescription)")
-                return
-            }
-            
-            guard let documents = snapshot?.documents else {
-                print("No skill types found")
-                return
-            }
-            
-            self.skillTypes = documents.map { document in
-                SkillType(id: document.documentID)
             }
         }
     }
     
     func fetchSkillOwnerDetails(for skillType: SkillType) {
-        let db = Firestore.firestore()
-        db.collection("skillType").document(skillType.id).collection("skillOwnerDetails").getDocuments { querySnapshot, error in
-            if let error = error {
-                print("Error fetching skill owner details: \(error.localizedDescription)")
-                return
-            }
-            
-            guard let documents = querySnapshot?.documents else {
-                print("No skill owner details found")
-                return
-            }
-            
-            let details = documents.compactMap { document -> SkillOwnerDetail? in
-                let data = document.data()
-                return SkillOwnerDetail(
-                    id: document.documentID,
-                    academy: data["academy"] as? String ?? "",
-                    className: data["className"] as? String ?? "",
-                    documentUid: data["documentUid"] as? String ?? "",
-                    price: data["price"] as? Double ?? 0,
-                    skillUid: data["skillUid"] as? String ?? "",
-                    teacherUid: data["teacherUid"] as? String ?? "",
-                    week: data["week"] as? [String] ?? [],
-                    startTime: data["startTime"] as? String ?? "",
-                    endTime: data["endTime"] as? String ?? "", 
-                    mode: data["mode"] as? String ?? ""
-                )
-            }
-            
-            DispatchQueue.main.async {
-                if let index = self.skillTypes.firstIndex(where: { $0.id == skillType.id }) {
-                    self.skillTypes[index].skillOwnerDetails = details
+        Task {
+            do {
+                let querySnapshot = try await db.collection("skillType").document(skillType.id).collection("skillOwnerDetails").getDocuments()
+                let details = querySnapshot.documents.compactMap { document -> SkillOwnerDetail? in
+                    let data = document.data()
+                    return SkillOwnerDetail(
+                        id: document.documentID,
+                        academy: data["academy"] as? String ?? "",
+                        className: data["className"] as? String ?? "",
+                        documentUid: data["documentUid"] as? String ?? "",
+                        price: data["fees"] as? Int ?? 0,
+                        skillUid: data["skillUid"] as? String ?? "",
+                        teacherUid: data["teacherUid"] as? String ?? "",
+                        week: data["week"] as? [String] ?? [],
+                        startTime: data["startTime"] as? Timestamp ?? Timestamp(), // Default value if conversion fails
+                        endTime: data["endTime"] as? Timestamp ?? Timestamp(), // Default value if conversion fails
+                        mode: data["mode"] as? String ?? ""
+                    )
                 }
+                DispatchQueue.main.async {
+                    if let index = self.skillTypes.firstIndex(where: { $0.id == skillType.id }) {
+                        self.skillTypes[index].skillOwnerDetails = details
+                    }
+                }
+            } catch {
+                print("Error fetching skill owner details: \(error.localizedDescription)")
             }
         }
     }
-
+    
     func sortDetailsAscending(for skillType: SkillType) {
         if let index = skillTypes.firstIndex(where: { $0.id == skillType.id }) {
             skillTypes[index].skillOwnerDetails.sort { $0.price < $1.price }
@@ -119,6 +110,65 @@ class SkillViewModel: ObservableObject {
     }
 }
 
+struct SkillView: View {
+    @ObservedObject var viewModel = SkillViewModel()
+    @State private var selectedSkillType: SkillType?
+    
+    var body: some View {
+        ScrollView {
+            ForEach(viewModel.skillTypes) { skillType in
+                VStack(alignment: .leading) {
+                    Text("Skill Type: \(skillType.id)")
+                        .font(.headline)
+                        .onTapGesture {
+                            selectedSkillType = skillType
+                            viewModel.fetchSkillOwnerDetails(for: skillType)
+                        }
+                        .padding()
+                    
+                    if selectedSkillType == skillType {
+                        HStack {
+                            Button("Sort \(skillType.isAscendingOrder ? "Descending" : "Ascending")") {
+                                if skillType.isAscendingOrder {
+                                    viewModel.sortDetailsDescending(for: skillType)
+                                } else {
+                                    viewModel.sortDetailsAscending(for: skillType)
+                                }
+                            }
+                            .frame(width: 150, height: 30)
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(8)
+                        }
+                    }
+                    
+                    ForEach(skillType.skillOwnerDetails) { detail in
+                        VStack(alignment: .leading) {
+                            Text("Class Name: \(detail.className)")
+                                .padding()
+                            Text("Academy: \(detail.academy)")
+                                .padding()
+                            Text("Price: \(detail.price)")
+                                .padding()
+                            Text("Week: \(detail.week.joined(separator: ", "))")
+                                .padding()
+                                .foregroundColor(.red)
+                            // Add other fields as needed
+                        }
+                    }
+                }
+                .padding()
+            }
+        }
+    }
+}
+
+
+
+#Preview {
+    SkillView()
+}
 
 
 
@@ -420,61 +470,58 @@ class SkillViewModel: ObservableObject {
 
 
 //
-struct SkillView: View {
-    @ObservedObject var viewModel = SkillViewModel()
-    @State private var selectedSkillType: SkillType?
-    
-    var body: some View {
-        ScrollView {
-            ForEach(viewModel.skillTypes) { skillType in
-                VStack(alignment: .leading) {
-                    Text("Skill Type: \(skillType.id)")
-                        .font(.headline)
-                        .onTapGesture {
-                            selectedSkillType = skillType
-                            viewModel.fetchSkillOwnerDetails(for: skillType)
-                        }
-                        .padding()
-                    
-                    if selectedSkillType == skillType {
-                        HStack {
-                            Button("Sort \(skillType.isAscendingOrder ? "Descending" : "Ascending")") {
-                                if skillType.isAscendingOrder {
-                                    viewModel.sortDetailsDescending(for: skillType)
-                                } else {
-                                    viewModel.sortDetailsAscending(for: skillType)
-                                }
-                            }
-                            .frame(width: 150, height: 30)
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.blue)
-                            .cornerRadius(8)
-                        }
-                    }
-                    
-                    ForEach(skillType.skillOwnerDetails) { detail in
-                        VStack(alignment: .leading) {
-                            Text("Class Name: \(detail.className)")
-                                .padding()
-                            Text("Academy: \(detail.academy)")
-                                .padding()
-                            Text("Price: \(detail.price)")
-                                .padding()
-                            Text("week: \(detail.week)")
-                                .padding()
-                                .foregroundColor(.red)
-                            // Add other fields as needed
-                        }
-                    }
-                }
-                .padding()
-            }
-        }
-    }
-}
+//struct SkillView: View {
+//    @ObservedObject var viewModel = SkillViewModel()
+//    @State private var selectedSkillType: SkillType?
+//    
+//    var body: some View {
+//        ScrollView {
+//            ForEach(viewModel.skillTypes) { skillType in
+//                VStack(alignment: .leading) {
+//                    Text("Skill Type: \(skillType.id)")
+//                        .font(.headline)
+//                        .onTapGesture {
+//                            selectedSkillType = skillType
+//                            viewModel.fetchSkillOwnerDetails(for: skillType)
+//                        }
+//                        .padding()
+//                    
+//                    if selectedSkillType == skillType {
+//                        HStack {
+//                            Button("Sort \(skillType.isAscendingOrder ? "Descending" : "Ascending")") {
+//                                if skillType.isAscendingOrder {
+//                                    viewModel.sortDetailsDescending(for: skillType)
+//                                } else {
+//                                    viewModel.sortDetailsAscending(for: skillType)
+//                                }
+//                            }
+//                            .frame(width: 150, height: 30)
+//                            .foregroundColor(.white)
+//                            .padding()
+//                            .background(Color.blue)
+//                            .cornerRadius(8)
+//                        }
+//                    }
+//                    
+//                    ForEach(skillType.skillOwnerDetails) { detail in
+//                        VStack(alignment: .leading) {
+//                            Text("Class Name: \(detail.className)")
+//                                .padding()
+//                            Text("Academy: \(detail.academy)")
+//                                .padding()
+//                            Text("Price: \(detail.price)")
+//                                .padding()
+//                            Text("week: \(detail.week)")
+//                                .padding()
+//                                .foregroundColor(.red)
+//                            // Add other fields as needed
+//                        }
+//                    }
+//                }
+//                .padding()
+//            }
+//        }
+//    }
+//}
 
 
-#Preview {
-    SkillView()
-}

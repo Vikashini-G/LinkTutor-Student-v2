@@ -1,9 +1,14 @@
 import SwiftUI
 import FirebaseAuth
+import FirebaseFirestore
 
 struct homeScreen: View{
     @StateObject var viewModel = listClassesScreenModel()
     @EnvironmentObject var dataModel : AuthViewModel
+    @ObservedObject var studentViewModel = StudentViewModel.shared
+    
+    @ObservedObject var skillViewModel = SkillViewModel()
+    @State private var selectedSkillType: SkillType?
    
     
     var body: some View{
@@ -11,9 +16,15 @@ struct homeScreen: View{
         NavigationStack{
             VStack{
                 VStack{
-                    header(yourName: "Aditya")
-                        .padding(.bottom)
-                    NavigationLink(destination: searchScreen()){
+                    if let fullName = studentViewModel.userDetails.first?.fullName {
+                        let nameComponents = fullName.components(separatedBy: " ")
+                        let firstName = nameComponents.first ?? ""
+                        header(yourName: firstName)
+                            .padding(.bottom)
+                    
+                    }
+                       
+                    NavigationLink(destination: SearchView()){
                         HStack{
                             Image(systemName: "magnifyingglass")
                                 .foregroundStyle(Color.myGray)
@@ -31,10 +42,17 @@ struct homeScreen: View{
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 15)
+                .onAppear {
+                  
+                    Task {
+                        let userId = Auth.auth().currentUser?.uid
+                        await studentViewModel.fetchStudentDetailsByID(studentID: userId!)
+                    }
+                }
                 
                 VStack{
                     //Enrolled classes section
-                    SectionHeader(sectionName: "Enrolled Classes", fileLocation: enrolledClassVList(classdata: enrolledClassMockData.sampleClassData))
+                    SectionHeader(sectionName: "Enrolled Classes", fileLocation: enrolledSubjectList())
                         .padding(.horizontal)
                         .onTapGesture {
                             viewModel.enrolledClassFramework = enrolledClassVList(classdata: enrolledClassMockData.sampleClassData)
@@ -54,24 +72,23 @@ struct homeScreen: View{
                     
                     //explore classes cards
                     ScrollView(.horizontal, showsIndicators: false){
-                        HStack(spacing: 10) {
-                            ForEach(1..<4) { index in
-                                popularClassCard(classData: classesMockData.classdata[index] , iconName: "book")
-                                    .onTapGesture {
-                                        viewModel.selectedFramework = classesMockData.classdata[index]
-                                    }
-                                
+                        HStack(spacing : 10){
+                            ForEach(skillViewModel.skillTypes.prefix(3)) { skillType in
+                                let skillTypeName: String = skillType.id
+                                NavigationLink(destination: listClassesScreen(skillType: skillType)) {
+                                    popularClassCardV(skillId: skillTypeName.prefix(1).capitalized + skillTypeName.dropFirst(), iconName: "book")
+                                }
                             }
+
+                            
                         }
                         
                         
                         Spacer()
                     }
-                    //.shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 12)
+
                     .padding(.leading)
-//                    .fullScreenCover(isPresented: $viewModel.isShowingDetailView) {
-//                        listClassesScreen(classData : viewModel.selectedFramework ?? classesMockData.sampleClassData, isShowingDetailView: $viewModel.isShowingDetailView)
-//                    }
+
                     
                     
                     Spacer()

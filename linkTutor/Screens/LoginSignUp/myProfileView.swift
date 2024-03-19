@@ -6,15 +6,18 @@
 //
 
 import SwiftUI
+import FirebaseAuth
+import FirebaseStorage
+import FirebaseFirestore
 
 struct myProfileView: View {
     @EnvironmentObject var viewModel : AuthViewModel
     @State var showEditView = false
-
+    @ObservedObject var studentViewModel = StudentViewModel.shared
     
     
     var body: some View {
-        NavigationView{
+        NavigationStack{
             VStack(alignment: .leading){
                 HStack{
                     Text("My Profile")
@@ -25,11 +28,31 @@ struct myProfileView: View {
                 
                 
                 HStack{
-                    Image("dummyProfilePic")
-                        .resizable()
+                    if let imageUrl = studentViewModel.userDetails.first?.imageUrl {
+                        AsyncImage(url: URL(string: imageUrl)) { image in
+                            image
+                                .resizable()
+                                .clipped()
+                                .frame(width: 85, height: 85)
+                                .cornerRadius(50)
+                                .padding(.trailing, 5)
+                        } placeholder: {
+                            Image(systemName: "person.crop.square")
+                                .resizable()
+                                .clipped()
+                                .frame(width: 85, height: 85)
+                                .cornerRadius(50)
+                                .padding(.trailing, 5)
+                        }
                         .frame(width: 90, height: 90)
-                        .cornerRadius(50)
-                    Spacer()
+                    } else {
+                        Image(systemName: "person.crop.square")
+                            .resizable()
+                            .clipped()
+                            .frame(width: 85, height: 85)
+                            .cornerRadius(50)
+                            .padding(.trailing, 5)
+                    }
                     
                     if let user = viewModel.currentUser {
                         VStack(alignment: .leading){
@@ -50,7 +73,7 @@ struct myProfileView: View {
                             Image(systemName: "pencil")
                                 .foregroundColor(.black)
                         }
-                        .sheet(isPresented: $showEditView) {
+                        .fullScreenCover(isPresented: $showEditView) {
                             ProfileInputView()
                         }
 //                        NavigationLink(destination: ProfileInputView()){
@@ -118,6 +141,13 @@ struct myProfileView: View {
             }
             .padding()
             .background(Color.background)
+        }
+        .onAppear {
+          
+            Task {
+                let userId = Auth.auth().currentUser?.uid
+                await studentViewModel.fetchStudentDetailsByID(studentID: userId!)
+            }
         }
     }
 }

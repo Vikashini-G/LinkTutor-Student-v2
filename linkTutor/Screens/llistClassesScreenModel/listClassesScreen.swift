@@ -22,49 +22,7 @@ struct listClassesScreen: View{
     var body: some View {
         NavigationStack {
             ZStack{
-              
-//                VStack(alignment: .leading){
-//                    HStack{
-//                        
-//                        Button {
-//                            isShowingDetailView = false
-//                        } label : {
-//                            Image(systemName: "arrow.backward")
-//                                .foregroundColor(Color(.label))
-//                                .imageScale(.large)
-//                                .frame(width : 44 , height : 44) // we increase the touch target if user click on the side of x then also it will responds
-//                        }
-//                        
-//                        
-//                        Text("\(skillType.id)")
-//                            .font(AppFont.largeBold)
-//                        Spacer()
-//                        Button(action: {
-//                            showActionSheet.toggle()
-//                        }){
-//                            Image(systemName: "line.3.horizontal.decrease")
-//                                .resizable()
-//                                .clipped()
-//                                .frame(width: 25, height: 15)
-//                                .foregroundColor(.accent)
-//                                .padding(.trailing)
-//                        }
-//                        .actionSheet(isPresented: $isAscendingOrder) {
-//                            ActionSheet(
-//                                title: Text("Filter Options"),
-//                                buttons: [
-//                                    .default(Text("Low to High Price")) {
-//                                         isAscendingOrder = true
-//                                    },
-//                                    .default(Text("High to Low Price")) {
-//                                        isAscendingOrder = false
-//                                    },
-//                                    .cancel(),
-//                                ]
-//                            )
-//                        }
-//                    }
-//                    .padding(.bottom, 15)
+ 
                 ScrollView {
                     VStack {
                         HStack {
@@ -94,9 +52,9 @@ struct listClassesScreen: View{
                                     
                               
                                     
-                                    NavigationLink(destination: classLandingPage(teacherUid: detail.teacherUid, academy: detail.academy , skillUid: detail.skillUid , skillOwnerUid: detail.id, className: detail.className)) {
+                                    NavigationLink(destination: classLandingPage(teacherUid: detail.teacherUid, academy: detail.academy , skillUid: detail.skillUid , skillOwnerUid: detail.id, className: detail.className, startTime: detail.startTime, endTime: detail.endTime, week: detail.week)) {
                                         
-                                        classPreviewCard(academy: detail.academy, className: detail.className, phoneNumber: 1234567890, price: Int(detail.price))
+                                        classPreviewCard(academy: detail.academy, className: detail.className, phoneNumber: 1234567890, price: Int(detail.price) , teacherUid : detail.teacherUid)
                                         
                                     }
                                     .padding()
