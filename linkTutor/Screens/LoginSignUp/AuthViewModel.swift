@@ -79,11 +79,12 @@ class AuthViewModel: ObservableObject {
     }
     
     func deleteAccount() {
-            Auth.auth().currentUser?.delete()
-            self.userSession = nil
-            self.currentUser = nil
-
+           
         let userId = Auth.auth().currentUser!.uid
+        Auth.auth().currentUser?.delete()
+        self.userSession = nil
+        self.currentUser = nil
+
 
                 Firestore.firestore().collection("users").document(userId).delete() { err in
                     if let err = err {

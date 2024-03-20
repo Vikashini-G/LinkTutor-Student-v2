@@ -50,6 +50,7 @@ struct homepageComplete: View {
                     .tabItem {
                         Label("Enrolled" , systemImage: "person.3.sequence")
                     }
+                
             }
             .accentColor(Color.accent)
         }

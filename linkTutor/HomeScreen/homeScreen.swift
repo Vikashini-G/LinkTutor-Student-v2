@@ -23,6 +23,10 @@ struct homeScreen: View{
                             .padding(.bottom)
                     
                     }
+                    else {
+                        header(yourName: "there")
+                            .padding(.bottom)
+                    }
                        
                     NavigationLink(destination: SearchView()){
                         HStack{
@@ -46,7 +50,7 @@ struct homeScreen: View{
                   
                     Task {
                         let userId = Auth.auth().currentUser?.uid
-                        await studentViewModel.fetchStudentDetailsByID(studentID: userId!)
+                        await studentViewModel.fetchStudentDetailsByID(studentID: userId ?? "")
                     }
                 }
                 

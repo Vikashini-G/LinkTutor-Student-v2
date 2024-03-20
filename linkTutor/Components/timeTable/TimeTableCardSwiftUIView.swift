@@ -59,8 +59,12 @@
 import SwiftUI
 import UserNotifications
 import EventKit
+import Firebase
 
 struct TimeTableCardSwiftUIView: View {
+    
+    @StateObject var viewModel = RequestListViewModel()
+    
     var className: String
     var tutorName: String
     var classStartTime: Date
@@ -71,43 +75,67 @@ struct TimeTableCardSwiftUIView: View {
     @State private var note: String = ""
 
     var body: some View {
-        VStack(alignment: .leading) {
-            HStack {
-                Text("\(className)")
-                    .font(AppFont.mediumSemiBold)
-
-                Spacer()
-
-                Button(action: {
-                    isShowingReminderPopup.toggle()
-                }) {
-                    Text("Set Reminder")
-                        .font(AppFont.actionButton)
-                        .foregroundColor(.accent)
-                        .cornerRadius(8)
+        HStack{
+            VStack {
+                Text("Enrolled Subject")
+                    .font(.title)
+                    .padding()
+                let userId = Auth.auth().currentUser?.uid
+                
+                VStack {
+                    ForEach(viewModel.enrolledStudents.filter { $0.studentUid == userId  && $0.requestAccepted == 1 }, id: \.id) { student in
+                        RequestSentCard(teacherName: student.teacherName, phoneNumber: student.teacherNumber, id: student.id, className: student.className)
+                    }
+                    .onAppear(){
+                        Task {
+                            await AuthViewModel().fetchUser()
+                        }
+                    }
                 }
-                .sheet(isPresented: $isShowingReminderPopup) {
-                    ReminderPopupView(isShowingReminderPopup: $isShowingReminderPopup, reminderTime: $reminderTime, note: $note, className: className, tutorName: tutorName)
+                .onAppear {
+                    viewModel.fetchEnrolledStudents()
                 }
             }
+            
+            VStack(alignment: .leading) {
+                HStack {
+                    Text("\(className)")
+                        .font(AppFont.mediumSemiBold)
 
-            Text("by \(tutorName)")
-                .font(AppFont.smallReg)
+                    Spacer()
 
-            Spacer().frame(height: 10)
+                    Button(action: {
+                        isShowingReminderPopup.toggle()
+                    }) {
+                        Text("Set Reminder")
+                            .font(AppFont.actionButton)
+                            .foregroundColor(.accent)
+                            .cornerRadius(8)
+                    }
+                    .sheet(isPresented: $isShowingReminderPopup) {
+                        ReminderPopupView(isShowingReminderPopup: $isShowingReminderPopup, reminderTime: $reminderTime, note: $note, className: className, tutorName: tutorName)
+                    }
+                }
 
-            Text("Timing")
-                .font(AppFont.smallSemiBold)
-                .foregroundColor(.gray)
-
-            HStack {
-                Text("\(formattedTiming(date: classStartTime)) - \(formattedTimingWithoutDay(date: classEndTime))")
+                Text("by \(tutorName)")
                     .font(AppFont.smallReg)
+
+                Spacer().frame(height: 10)
+
+                Text("Timing")
+                    .font(AppFont.smallSemiBold)
+                    .foregroundColor(.gray)
+
+                HStack {
+                    Text("\(formattedTiming(date: classStartTime)) - \(formattedTimingWithoutDay(date: classEndTime))")
+                        .font(AppFont.smallReg)
+                }
             }
+            .padding([.horizontal, .vertical], 15)
+            .background(Color.elavated)
+            .cornerRadius(10)
         }
-        .padding([.horizontal, .vertical], 15)
-        .background(Color.elavated)
-        .cornerRadius(10)
+        
     }
 
     private func formattedTiming(date: Date) -> String {

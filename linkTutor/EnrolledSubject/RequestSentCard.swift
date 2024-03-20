@@ -39,9 +39,9 @@ struct RequestSentCard: View {
                     HStack {
                             Button(action: {
                                 // Delete button action
-                                Task {
-                                    await viewModel.deleteEnrolled(id: id)
-                                }
+                              
+                                    viewModel.deleteEnrolled(id: id)
+                                
                                 
                             }) {
                                 Text("Delete")
@@ -50,7 +50,6 @@ struct RequestSentCard: View {
                                     .foregroundColor(.white)
                                     .cornerRadius(8.0)
                             }
-                        
                     }
                 }
                 Spacer()
@@ -60,6 +59,7 @@ struct RequestSentCard: View {
             .padding()
             .background(Color.accent)
             .cornerRadius(10)
+            
         }
     }
 }
@@ -67,3 +67,5 @@ struct RequestSentCard: View {
 #Preview {
     RequestSentCard(teacherName: "Teacher Name", phoneNumber: 1234567890 , id: "1", className: "Class Name")
 }
+
+

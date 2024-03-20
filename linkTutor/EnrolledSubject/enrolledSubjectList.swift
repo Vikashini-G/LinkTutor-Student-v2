@@ -15,27 +15,32 @@ import Firebase
 struct enrolledSubjectList: View {
     @StateObject var viewModel = RequestListViewModel()
     
+    
     var body: some View {
-        VStack {
-            Text("Enrolled Subject")
-                .font(.title)
-                .padding()
-            let userId = Auth.auth().currentUser?.uid
-            
+        NavigationStack{
             VStack {
-                ForEach(viewModel.enrolledStudents.filter { $0.studentUid == userId  && $0.requestAccepted == 1 }, id: \.id) { student in
-                    RequestSentCard(teacherName: student.teacherName, phoneNumber: student.teacherNumber, id: student.id, className: student.className)
-                }
-                .onAppear(){
-                    Task {
-                        await AuthViewModel().fetchUser()
+                Text("Enrolled Subject")
+                    .font(.title)
+                    .padding()
+                let userId = Auth.auth().currentUser?.uid
+                
+                VStack {
+                    ForEach(viewModel.enrolledStudents.filter { $0.studentUid == userId  && $0.requestAccepted == 1 }, id: \.id) { student in
+                        RequestSentCard(teacherName: student.teacherName, phoneNumber: student.teacherNumber, id: student.id, className: student.className)
                     }
+                    .onAppear(){
+                        Task {
+                            await AuthViewModel().fetchUser()
+                        }
+                    }
+                    
                 }
-            }
-            .onAppear {
-                viewModel.fetchEnrolledStudents()
+                .onAppear {
+                    viewModel.fetchEnrolledStudents()
+                }
             }
         }
+       
     }
 }
 
@@ -84,10 +89,10 @@ class RequestListViewModel: ObservableObject {
                         let teacherUid = studentData["teacherUid"] as? String ,
                        
                        let skillUid = studentData["skillUid"] as? String ,
-                       var startTime = studentData["startTime"] as? Timestamp  ,
+                       let startTime = studentData["startTime"] as? Timestamp  ,
                        
                        let  week = studentData["week"] as? [String],
-                       var enrolledDate = studentData["enrolledDate"] as? Timestamp
+                       let enrolledDate = studentData["enrolledDate"] as? Timestamp
                         
                     
                     {
