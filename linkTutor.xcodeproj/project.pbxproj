@@ -44,6 +44,8 @@
 		0FDA44862B68FDC2006F1418 /* accentHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FDA44852B68FDC2006F1418 /* accentHeader.swift */; };
 		0FDA44892B6903CC006F1418 /* accentClassViewHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FDA44882B6903CC006F1418 /* accentClassViewHeader.swift */; };
 		0FDA448B2B6911A3006F1418 /* classLandingScrollable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FDA448A2B6911A3006F1418 /* classLandingScrollable.swift */; };
+		84C858832BAAFE4D00C41B02 /* CalenderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C858822BAAFE4D00C41B02 /* CalenderView.swift */; };
+		84C858852BAB0A0E00C41B02 /* calenderPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C858842BAB0A0E00C41B02 /* calenderPage.swift */; };
 		B1A9E3AE2B6A946600324817 /* enrolledClassList.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A9E3AD2B6A946600324817 /* enrolledClassList.swift */; };
 		B1A9E3B02B6A947F00324817 /* enrolledClassDataM.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A9E3AF2B6A947F00324817 /* enrolledClassDataM.swift */; };
 		B1A9E3B42B6AA87600324817 /* myProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A9E3B32B6AA87600324817 /* myProfileView.swift */; };
@@ -127,6 +129,8 @@
 		0FDA44852B68FDC2006F1418 /* accentHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = accentHeader.swift; sourceTree = "<group>"; };
 		0FDA44882B6903CC006F1418 /* accentClassViewHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = accentClassViewHeader.swift; sourceTree = "<group>"; };
 		0FDA448A2B6911A3006F1418 /* classLandingScrollable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = classLandingScrollable.swift; sourceTree = "<group>"; };
+		84C858822BAAFE4D00C41B02 /* CalenderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalenderView.swift; sourceTree = "<group>"; };
+		84C858842BAB0A0E00C41B02 /* calenderPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = calenderPage.swift; sourceTree = "<group>"; };
 		B1A9E3AD2B6A946600324817 /* enrolledClassList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = enrolledClassList.swift; sourceTree = "<group>"; };
 		B1A9E3AF2B6A947F00324817 /* enrolledClassDataM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = enrolledClassDataM.swift; sourceTree = "<group>"; };
 		B1A9E3B32B6AA87600324817 /* myProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = myProfileView.swift; sourceTree = "<group>"; };
@@ -233,6 +237,8 @@
 			children = (
 				0F5E94382B66568000212922 /* appFonts.swift */,
 				0F5E93FD2B6549F000212922 /* linkTutorApp.swift */,
+				84C858822BAAFE4D00C41B02 /* CalenderView.swift */,
+				84C858842BAB0A0E00C41B02 /* calenderPage.swift */,
 				0F5E93FF2B6549F000212922 /* ContentView.swift */,
 				DFFA21EC2BA1D20800CDFBD6 /* EnrolledSubject */,
 				DFD7679C2B9DDF6300AD29C9 /* GoogleService-Info.plist */,
@@ -637,8 +643,10 @@
 				DF578C812BA24BAB005D0CA1 /* requestConfirmation.swift in Sources */,
 				0F830E4A2B79D04A0091EA77 /* enrolledClassVList.swift in Sources */,
 				B1A9E3C92B6CB3FD00324817 /* Notifications.swift in Sources */,
+				84C858852BAB0A0E00C41B02 /* calenderPage.swift in Sources */,
 				DF046C4E2B9E0373005C9EB2 /* TeacherDetails.swift in Sources */,
 				0F5E942E2B654B6A00212922 /* homeScreen.swift in Sources */,
+				84C858832BAAFE4D00C41B02 /* CalenderView.swift in Sources */,
 				B1A9E3B42B6AA87600324817 /* myProfileView.swift in Sources */,
 				0FAA9BEC2B68CA9400C0A82D /* reviewCard.swift in Sources */,
 				0F9B1FD82B944AB900250561 /* User.swift in Sources */,

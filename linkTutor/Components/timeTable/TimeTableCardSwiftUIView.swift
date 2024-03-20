@@ -11,16 +11,16 @@
 //    var className: String
 //    var tutorName: String
 //    var time: String
-//    
+//
 //    var body: some View {
 //        VStack(alignment: .leading) { // Align the content to the left
 //            HStack {
 //                // Class
 //                Text("\(className)")
 //                    .font(AppFont.mediumSemiBold)
-//                
+//
 //                Spacer()
-//                
+//
 //                Button(action: {
 //                    // Add your button action here
 //                    print("Button Tapped!")
@@ -30,23 +30,23 @@
 //                        .cornerRadius(8)
 //                }
 //            }
-//            
+//
 //            Text("by \(tutorName)")
 //                .font(AppFont.smallReg)
-//            
+//
 //            Spacer().frame(height: 10)
-//            
+//
 //            Text("Timing")
 //                .font(AppFont.smallReg)
 //                .foregroundColor(.gray)
-//            
+//
 //            Text("\(time)")
 //                .font(AppFont.smallReg)
 //        }
 //        .padding([.horizontal, .vertical], 15)
 //        .background(Color.white)
 //        .cornerRadius(10)
-//        
+//
 //    }
 //}
 
@@ -59,15 +59,11 @@
 import SwiftUI
 import UserNotifications
 import EventKit
-import Firebase
 
 struct TimeTableCardSwiftUIView: View {
-    
-    @StateObject var viewModel = RequestListViewModel()
-    
     var className: String
     var tutorName: String
-    var classStartTime: Date
+    var startTime: Date
     var classEndTime: Date
 
     @State private var isShowingReminderPopup = false
@@ -75,67 +71,43 @@ struct TimeTableCardSwiftUIView: View {
     @State private var note: String = ""
 
     var body: some View {
-        HStack{
-            VStack {
-                Text("Enrolled Subject")
-                    .font(.title)
-                    .padding()
-                let userId = Auth.auth().currentUser?.uid
-                
-                VStack {
-                    ForEach(viewModel.enrolledStudents.filter { $0.studentUid == userId  && $0.requestAccepted == 1 }, id: \.id) { student in
-                        RequestSentCard(teacherName: student.teacherName, phoneNumber: student.teacherNumber, id: student.id, className: student.className)
-                    }
-                    .onAppear(){
-                        Task {
-                            await AuthViewModel().fetchUser()
-                        }
-                    }
+        VStack(alignment: .leading) {
+            HStack {
+                Text("\(className)")
+                    .font(AppFont.mediumSemiBold)
+
+                Spacer()
+
+                Button(action: {
+                    isShowingReminderPopup.toggle()
+                }) {
+                    Text("Set Reminder")
+                        .font(AppFont.actionButton)
+                        .foregroundColor(.accent)
+                        .cornerRadius(8)
                 }
-                .onAppear {
-                    viewModel.fetchEnrolledStudents()
+                .sheet(isPresented: $isShowingReminderPopup) {
+                    ReminderPopupView(isShowingReminderPopup: $isShowingReminderPopup, reminderTime: $reminderTime, note: $note, className: className, tutorName: tutorName)
                 }
             }
-            
-            VStack(alignment: .leading) {
-                HStack {
-                    Text("\(className)")
-                        .font(AppFont.mediumSemiBold)
 
-                    Spacer()
+            Text("by \(tutorName)")
+                .font(AppFont.smallReg)
 
-                    Button(action: {
-                        isShowingReminderPopup.toggle()
-                    }) {
-                        Text("Set Reminder")
-                            .font(AppFont.actionButton)
-                            .foregroundColor(.accent)
-                            .cornerRadius(8)
-                    }
-                    .sheet(isPresented: $isShowingReminderPopup) {
-                        ReminderPopupView(isShowingReminderPopup: $isShowingReminderPopup, reminderTime: $reminderTime, note: $note, className: className, tutorName: tutorName)
-                    }
-                }
+            Spacer().frame(height: 10)
 
-                Text("by \(tutorName)")
+            Text("Timing")
+                .font(AppFont.smallSemiBold)
+                .foregroundColor(.gray)
+
+            HStack {
+                Text("\(formattedTiming(date: startTime))")
                     .font(AppFont.smallReg)
-
-                Spacer().frame(height: 10)
-
-                Text("Timing")
-                    .font(AppFont.smallSemiBold)
-                    .foregroundColor(.gray)
-
-                HStack {
-                    Text("\(formattedTiming(date: classStartTime)) - \(formattedTimingWithoutDay(date: classEndTime))")
-                        .font(AppFont.smallReg)
-                }
             }
-            .padding([.horizontal, .vertical], 15)
-            .background(Color.elavated)
-            .cornerRadius(10)
         }
-        
+        .padding([.horizontal, .vertical], 15)
+        .background(Color.elavated)
+        .cornerRadius(10)
     }
 
     private func formattedTiming(date: Date) -> String {
@@ -156,48 +128,9 @@ struct TimeTableCardSwiftUIView_Previews: PreviewProvider {
         TimeTableCardSwiftUIView(
             className: "Math",
             tutorName: "John Doe",
-            classStartTime: Date(),
+            startTime: Date(),
             classEndTime: Date().addingTimeInterval(3600)
         )
     }
 }
 
-struct ReminderPopupView: View {
-    @Binding var isShowingReminderPopup: Bool
-    @Binding var reminderTime: Date
-    @Binding var note: String
-    var className: String
-    var tutorName: String
-
-    let notify = NotificationHandler()
-    @State var selectedDate = Date()
-
-    var body: some View {
-        VStack {
-            DatePicker("Select Reminder Time", selection: $reminderTime, in: Date()..., displayedComponents: [.date, .hourAndMinute])
-                .datePickerStyle(GraphicalDatePickerStyle())
-                .padding()
-
-            TextField("Note", text: $note)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-
-            Button("Set Reminder") {
-                notify.sendNotification(
-                    date: reminderTime,
-                    type: "date",
-                    title: "LinkTutor",
-                    subtitle: "\(className) with \(tutorName)",
-                    body: note
-                )
-                isShowingReminderPopup.toggle()
-            }
-            .padding()
-            .foregroundColor(.accent)
-            .cornerRadius(8)
-        }
-        .padding()
-        .cornerRadius(20)
-
-    }
-}

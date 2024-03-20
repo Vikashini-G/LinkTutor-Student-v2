@@ -44,7 +44,7 @@ struct enrolledSubjectList: View {
     }
 }
 
-struct EnrolledStudent: Identifiable {
+struct EnrolledStudent: Identifiable , Equatable {
     let id: String // Assuming this is the document ID in Firestore
     let teacherName: String
     let skillOwnerDetailsUid: String

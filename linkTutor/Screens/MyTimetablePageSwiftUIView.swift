@@ -87,7 +87,7 @@ struct MyTimetablePageSwiftUIView: View {
                                 TimeTableCardSwiftUIView(
                                     className: timetableClass.className,
                                     tutorName: timetableClass.tutorName,
-                                    classStartTime: timetableClass.classStartTime,
+                                    startTime: timetableClass.classStartTime,
                                     classEndTime: timetableClass.classEndTime
                                 )
                             }
@@ -104,14 +104,21 @@ struct MyTimetablePageSwiftUIView: View {
                     }
 
                     VStack(spacing: 10){
-                        ForEach(todayClasses, id: \.self) { timetableClass in
-                            TimeTableCardSwiftUIView(
-                                className: timetableClass.className,
-                                tutorName: timetableClass.tutorName,
-                                classStartTime: timetableClass.classStartTime,
-                                classEndTime: timetableClass.classEndTime
-                            )
+                        // Run the loop 30 times
+                        ForEach(0..<30, id: \.self) { _ in
+                            VStack {
+                                // Your existing ForEach loop for displaying timetable classes
+                                ForEach(todayClasses, id: \.self) { timetableClass in
+                                    TimeTableCardSwiftUIView(
+                                        className: timetableClass.className,
+                                        tutorName: timetableClass.tutorName,
+                                        startTime: timetableClass.classStartTime,
+                                        classEndTime: timetableClass.classEndTime
+                                    )
+                                }
+                            }
                         }
+
                     }
 
                     // Tomorrow's classes section
@@ -122,16 +129,7 @@ struct MyTimetablePageSwiftUIView: View {
                         Spacer()
                     }
 
-                    VStack(spacing: 10){
-                        ForEach(tomorrowClasses, id: \.self) { timetableClass in
-                            TimeTableCardSwiftUIView(
-                                className: timetableClass.className,
-                                tutorName: timetableClass.tutorName,
-                                classStartTime: timetableClass.classStartTime,
-                                classEndTime: timetableClass.classEndTime
-                            )
-                        }
-                    }
+                    
                 }
                 .padding()
             }
