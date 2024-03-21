@@ -106,6 +106,16 @@ struct ReminderPopupView: View {
             .padding()
             .foregroundColor(.accent)
             .cornerRadius(8)
+            Spacer()
+            Button(action: {
+                            notify.askPermission()
+                        }) {
+                            Text("Ask for Notification Permission")
+                                .foregroundColor(.blue)
+                                .padding()
+                                .cornerRadius(10)
+                        }
+                        .padding()
         }
         .padding()
         .cornerRadius(20)
