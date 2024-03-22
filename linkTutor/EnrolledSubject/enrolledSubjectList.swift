@@ -19,28 +19,31 @@ struct enrolledSubjectList: View {
     var body: some View {
         NavigationStack{
             VStack {
-                Text("Enrolled Subject")
-                    .font(.title)
-                    .padding()
+                HStack{
+                    Text("Enrolled Subject").font(AppFont.largeBold)
+                    Spacer()
+                }
                 let userId = Auth.auth().currentUser?.uid
                 
                 VStack {
                     ForEach(viewModel.enrolledStudents.filter { $0.studentUid == userId  && $0.requestAccepted == 1 }, id: \.id) { student in
-                        RequestSentCard(teacherName: student.teacherName, phoneNumber: student.teacherNumber, id: student.id, className: student.className)
+                        enrolledSubjectCard(teacherName: student.teacherName, phoneNumber: student.teacherNumber, id: student.id, className: student.className)
                     }
                     .onAppear(){
                         Task {
                             await AuthViewModel().fetchUser()
                         }
                     }
-                    
                 }
+                .padding()
                 .onAppear {
                     viewModel.fetchEnrolledStudents()
                 }
+                Spacer()
             }
+            .padding()
+            .background(Color.background)
         }
-       
     }
 }
 

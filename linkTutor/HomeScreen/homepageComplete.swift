@@ -43,7 +43,7 @@ struct homepageComplete: View {
 //                    }
                 CalendarView()
                     .tabItem {
-                        Label("Request" , systemImage: "shared.with.you")
+                        Label("My calendar" , systemImage: "calendar")
                     }
                 
                 RequestSent()

@@ -19,46 +19,38 @@ struct enrolledSubjectCard: View {
     
     var body: some View{
         NavigationStack{
-            
-            HStack{
-                VStack(alignment: .leading){
-                    Text("\(teacherName)")
-                        .font(AppFont.mediumSemiBold)
-                    
-                    Text("\(className)")
-                        .font(AppFont.smallSemiBold)
-                    
-                    Text("\(phoneNumber)")
-                        .font(AppFont.smallReg)
-                        .foregroundColor(.gray)
-                        .padding(.top, 1)
-                   
-                    
-                   
-                    
-                    HStack {
-                            Button(action: {
-                                // Delete button action
-                                Task {
-                                    await viewModel.deleteEnrolled(id: id)
-                                }
-                                
-                            }) {
-                                Text("Delete")
-                                    .frame(minWidth: 90, minHeight: 30)
-                                    .background(Color.red)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(8.0)
-                            }
+            VStack{
+                HStack{
+                    VStack(alignment: .leading){
+                        Text("\(className)")
+                            .font(AppFont.mediumSemiBold)
                         
+                        Text("\(teacherName)")
+                            .font(AppFont.smallReg)
+                    }
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        // Delete button action
+                        Task {
+                            await viewModel.deleteEnrolled(id: id)
+                        }
+                        
+                    }) {
+                        Text("Unenroll")
+                            .frame(minWidth: 90, minHeight: 30)
+                            .background(Color.red)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
                     }
                 }
                 Spacer()
             }
-            .frame(width: min(300,200), height: 110)
-            .fixedSize()
+            .frame(maxWidth: .infinity, maxHeight: 70)
             .padding()
-            .background(Color.green)
+            .background(Color.accent)
+            .foregroundColor(.black)
             .cornerRadius(10)
         }
     }

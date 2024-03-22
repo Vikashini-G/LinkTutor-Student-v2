@@ -18,15 +18,17 @@ struct RequestSent: View {
     var body: some View {
         NavigationStack {
             VStack {
-                Text("Request")
-                    .font(.title)
-                    .padding()
-                
+                HStack{
+                    Text("Request")
+                        .font(AppFont.largeBold)
+                        .padding()
+                    Spacer()
+                }
                 let userId = Auth.auth().currentUser?.uid
                 
-                List {
-                    ForEach(viewModel.enrolledStudents.filter { $0.studentUid == userId && $0.requestSent == 1 }, id: \.id) { student in
-                        enrolledSubjectCard(teacherName: student.teacherName, phoneNumber: student.teacherNumber, id: student.id, className: student.className)
+                VStack {
+                    ForEach(viewModel.enrolledStudents.filter { $0.studentUid == userId && $0.requestAccepted == 0 }, id: \.id) { student in
+                        RequestSentCard(teacherName: student.teacherName, phoneNumber: student.teacherNumber, id: student.id, className: student.className)
                     }
                     .onAppear() {
                         Task {
@@ -34,6 +36,7 @@ struct RequestSent: View {
                         }
                     }
                 }
+                .padding()
                 .onAppear {
                     viewModel.fetchEnrolledStudents()
                 }
@@ -41,8 +44,11 @@ struct RequestSent: View {
                     await refreshData()
                 }
                 .overlay(refreshControl)
-            }
-        }
+                
+                Spacer()
+            } //v end
+            .background(Color.background)
+        } //nav end
     }
     
     private func refreshData() async {

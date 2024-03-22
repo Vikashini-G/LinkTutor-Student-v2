@@ -54,51 +54,63 @@ struct homeScreen: View{
                     }
                 }
                 
-                VStack{
-                    //Enrolled classes section
-                    SectionHeader(sectionName: "Enrolled Classes", fileLocation: enrolledSubjectList())
-                        .padding(.horizontal)
-                        .onTapGesture {
-                            viewModel.enrolledClassFramework = enrolledClassVList(classdata: enrolledClassMockData.sampleClassData)
-                        }
-                    
-                    //enrolled classes cards
-                    enrolledClassList(classdata: enrolledClassMockData.sampleClassData)
-                    
-                    
-                    //Explore skills section
-                    SectionHeader(sectionName: "Explore Skills!", fileLocation: allPopularCard())
-                        .padding(.horizontal)
-                        .onTapGesture {
-                            viewModel.popularClassFramework = allPopularCard()
-                        }
-                       
-                    
-                    //explore classes cards
-                    ScrollView(.horizontal, showsIndicators: false){
-                        HStack(spacing : 10){
-                            ForEach(skillViewModel.skillTypes.prefix(3)) { skillType in
-                                let skillTypeName: String = skillType.id
-                                NavigationLink(destination: listClassesScreen(skillType: skillType)) {
-                                    popularClassCardV(skillId: skillTypeName.prefix(1).capitalized + skillTypeName.dropFirst(), iconName: "book")
-                                }
+                ScrollView(.vertical, showsIndicators: false){
+                    VStack{
+                        //Enrolled classes section
+                        SectionHeader(sectionName: "Enrolled Classes", fileLocation: enrolledSubjectList())
+                            .onTapGesture {
+                                viewModel.enrolledClassFramework = enrolledClassVList(classdata: enrolledClassMockData.sampleClassData)
                             }
-
-                            
+                            .padding(.horizontal)
+                        
+                        //enrolled classes cards
+                        enrolledClassList(classdata: enrolledClassMockData.sampleClassData)
+                        
+                        
+                        //Explore skills section
+                        HStack {
+                            Text("Explore Skills!")
+                                .font(AppFont.mediumSemiBold)
+                            Spacer()
+                        }
+                        .padding(.top, 30)
+                        .padding(.bottom, 15)
+                        .padding(.horizontal)
+                        
+                        
+                        //explore classes cards
+                        allPopularCard()
+                        
+//                        ScrollView(.horizontal, showsIndicators: false){
+//                            HStack(spacing : 10){
+//                                ForEach(skillViewModel.skillTypes.prefix(3)) { skillType in
+//                                    let skillTypeName: String = skillType.id
+//                                    NavigationLink(destination: listClassesScreen(skillType: skillType)) {
+//                                        popularClassCardV(skillId: skillTypeName.prefix(1).capitalized + skillTypeName.dropFirst(), iconName: "book")
+//                                    }
+//                                }
+//                                
+//                                
+//                            }
+//                            
+//                            
+//                            Spacer()
+//                        }
+                        
+                        Spacer().frame(height: 150)
+                        
+                        HStack{
+                            Spacer()
+                            Text("Here's to unlocking your full potential!")
+                                .font(AppFont.actionButton)
+                                .foregroundStyle(Color.gray)
+                            Spacer()
                         }
                         
-                        
-                        Spacer()
+                        Spacer().frame(height: 30)
                     }
-
-                    .padding(.leading)
-
-                    
-                    
-                    Spacer()
-                    
-                    
                 }
+                    .edgesIgnoringSafeArea(.bottom)
             }
             .background(Color.background)
             .environment(\.colorScheme, .dark)

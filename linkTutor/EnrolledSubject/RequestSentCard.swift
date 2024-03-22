@@ -19,53 +19,45 @@ struct RequestSentCard: View {
     
     var body: some View{
         NavigationStack{
-            
-            HStack{
-                VStack(alignment: .leading){
-                    Text("\(teacherName)")
-                        .font(AppFont.mediumSemiBold)
+            VStack{
+                HStack{
+                    VStack(alignment: .leading){
+                        Text("\(className)")
+                            .font(AppFont.mediumSemiBold)
+                        
+                        Text("\(teacherName)")
+                            .font(AppFont.smallReg)
+                    }
                     
-                    Text("\(className)")
-                        .font(AppFont.smallSemiBold)
+                    Spacer()
                     
-                    Text("\(phoneNumber)")
-                        .font(AppFont.smallReg)
-                        .foregroundColor(.gray)
-                        .padding(.top, 1)
-                   
-                    
-                   
-                    
-                    HStack {
-                            Button(action: {
-                                // Delete button action
-                              
-                                    viewModel.deleteEnrolled(id: id)
-                                
-                                
-                            }) {
-                                Text("Delete")
-                                    .frame(minWidth: 90, minHeight: 30)
-                                    .background(Color.red)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(8.0)
-                            }
+                    Button(action: {
+                        // Delete button action
+                        Task {
+                            await viewModel.deleteEnrolled(id: id)
+                        }
+                        
+                    }) {
+                        Text("Delete")
+                            .frame(minWidth: 90, minHeight: 30)
+                            .background(Color.red)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
                     }
                 }
                 Spacer()
             }
-            .frame(width: min(300,200), height: 110)
-            .fixedSize()
+            .frame(maxWidth: .infinity, maxHeight: 70)
             .padding()
             .background(Color.accent)
+            .foregroundColor(.black)
             .cornerRadius(10)
-            
         }
     }
 }
     
 #Preview {
-    RequestSentCard(teacherName: "Teacher Name", phoneNumber: 1234567890 , id: "1", className: "Class Name")
+    RequestSentCard(teacherName: "Obama", phoneNumber: 1234567890 , id: "1", className: "Science")
 }
 
 
