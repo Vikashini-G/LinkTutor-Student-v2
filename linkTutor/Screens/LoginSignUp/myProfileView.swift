@@ -14,6 +14,7 @@ struct myProfileView: View {
     @EnvironmentObject var viewModel : AuthViewModel
     @State var showEditView = false
     @ObservedObject var studentViewModel = StudentViewModel.shared
+    @State private var showAlert = false
     
     
     var body: some View {
@@ -37,19 +38,19 @@ struct myProfileView: View {
                                 .cornerRadius(50)
                                 .padding(.trailing, 5)
                         } placeholder: {
-                            Image(systemName: "person.crop.square")
+                            Image(systemName: "person.circle.fill")
                                 .resizable()
                                 .clipped()
-                                .frame(width: 85, height: 85)
+                                .frame(width: 70, height: 70)
                                 .cornerRadius(50)
                                 .padding(.trailing, 5)
                         }
                         .frame(width: 90, height: 90)
                     } else {
-                        Image(systemName: "person.crop.square")
+                        Image(systemName: "person.circle.fill")
                             .resizable()
                             .clipped()
-                            .frame(width: 85, height: 85)
+                            .frame(width: 70, height: 70)
                             .cornerRadius(50)
                             .padding(.trailing, 5)
                     }
@@ -61,7 +62,7 @@ struct myProfileView: View {
                                 .foregroundStyle(Color.black)
                             Text(user.email)
                                 .font(AppFont.actionButton)
-                                .foregroundStyle(Color.black)
+                                .foregroundStyle(Color.black).opacity(0.7)
                         }
                         .padding(.trailing)
                     }
@@ -70,8 +71,10 @@ struct myProfileView: View {
                         Button(action: {
                             showEditView.toggle()
                         }) {
-                            Image(systemName: "pencil")
-                                .foregroundColor(.black)
+//                            Image(systemName: "pencil")
+                            Text("Edit")
+                                .foregroundColor(.blue)
+                                .font(AppFont.actionButton)
                         }
                         .fullScreenCover(isPresented: $showEditView) {
                             ProfileInputView()
@@ -84,7 +87,7 @@ struct myProfileView: View {
                     }
                 }
                 .padding()
-                .frame(width: 350, height: 120)
+                .frame(width: 350, height: 100)
                 .background(Color.accent)
                 .cornerRadius(20)
                 
@@ -92,25 +95,35 @@ struct myProfileView: View {
                 List{
                     HStack{
                         Text("Change password")
-                       Spacer()
-                        NavigationLink(destination : newPassword()){
-                    
-                        }
-                    
-                        
-                       
+                        NavigationLink(destination : newPassword()){}
+                            .opacity(0.0)
+                        Spacer()
+                        Image(systemName: "arrow.right")
+                            .foregroundColor(.accent)
                     }
                     .listRowBackground(Color.clear)
                     HStack{
                         Text("Delete my account")
                         Spacer()
                         Button{
-                            viewModel.deleteAccount()
+                            showAlert = true
                         } label: {
-                           
                             Image(systemName: "arrow.right")
+                                .foregroundColor(.accent)
                         }
                     }
+                    .alert(isPresented: $showAlert) {
+                                // Alert asking for confirmation
+                                Alert(
+                                    title: Text("Delete Account"),
+                                    message: Text("Are you sure you want to delete your account?"),
+                                    primaryButton: .destructive(Text("Delete")) {
+                                        viewModel.deleteAccount()
+                                        print("Account deleted")
+                                    },
+                                    secondaryButton: .cancel(Text("Cancel"))
+                                )
+                            }
                     .listRowBackground(Color.clear)
                    
                 }

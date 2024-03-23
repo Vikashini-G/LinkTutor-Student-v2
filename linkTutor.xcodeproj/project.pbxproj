@@ -475,8 +475,8 @@
 			children = (
 				DFFA21ED2BA1D3F900CDFBD6 /* RequestSent.swift */,
 				DFFA21EF2BA1D40C00CDFBD6 /* RequestSentCard.swift */,
-				DFFA21F12BA1D42800CDFBD6 /* enrolledSubjectCard.swift */,
 				DFFA21F32BA1D43100CDFBD6 /* enrolledSubjectList.swift */,
+				DFFA21F12BA1D42800CDFBD6 /* enrolledSubjectCard.swift */,
 			);
 			path = EnrolledSubject;
 			sourceTree = "<group>";

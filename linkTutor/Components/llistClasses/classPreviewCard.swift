@@ -21,7 +21,7 @@ struct classPreviewCard: View {
                             .cornerRadius(50)
                             .padding(.trailing, 5)
                     } placeholder: {
-                        Image(systemName: "person.crop.square")
+                        Image(systemName: "person.circle.fill")
                             .resizable()
                             .clipped()
                             .frame(width: 85, height: 85)
@@ -30,7 +30,7 @@ struct classPreviewCard: View {
                     }
                     .frame(width: 90, height: 90)
                 } else {
-                    Image(systemName: "person.crop.square")
+                    Image(systemName: "person.circle.fill")
                         .resizable()
                         .clipped()
                         .frame(width: 85, height: 85)
@@ -46,37 +46,44 @@ struct classPreviewCard: View {
                     
                     HStack {
                         Text("4.0 ⭐️")
-                            .padding([.top, .bottom], 4)
-                            .padding([.leading, .trailing], 8)
-                            .background(Color.white)
-                            .cornerRadius(50)
-                            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 12)
+//                            .padding([.top, .bottom], 4)
+//                            .padding([.leading, .trailing], 8)
+//                            .background(Color.white).opacity(0.5)
+//                            .cornerRadius(50)
+//                            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 12)
                         Text("40 reviews")
-                            .foregroundColor(.gray)
+                            .foregroundColor(.black).opacity(0.6)
                     }
+                    Text("Rs. \(price) /month").font(AppFont.smallSemiBold)
+//                        .padding([.top, .bottom], 1)
                 }
                 
                 Spacer()
             }
             
-            HStack {
-                Image(systemName: "phone.fill")
-                    .font(.system(size: 20))
-                Text("\(phoneNumber)")
-                    .font(.subheadline)
-                    .padding([.top, .bottom], 4)
-                    .padding([.leading, .trailing], 12)
-                    .background(Color.blue)
-                    .cornerRadius(50)
+            HStack{
+                HStack{
+                    Image(systemName: "phone.fill")
+                        .font(.system(size: 20))
+                    Text(String("\(phoneNumber)"))
+                        .font(AppFont.actionButton)
+                   
+                }
+                .padding([.top, .bottom], 4)
+                .padding([.leading, .trailing], 12)
+                .background(Color.phoneAccent)
+                .cornerRadius(50)
                 
                 Spacer()
-                Text("\(price)")
-                    .font(.subheadline)
+//                Text("\(price)")
+            
             }
         }
+        
+        .frame(maxWidth: .infinity, maxHeight: 150)
         .padding()
         .foregroundColor(Color.black)
-        .background(Color.accentColor)
+        .background(Color.accent)
         .cornerRadius(20)
         .onAppear {
             Task {
@@ -90,5 +97,5 @@ struct classPreviewCard: View {
 
 
 #Preview {
-    classPreviewCard(academy: "unknown's Acadmey", className: "Unknown", phoneNumber: 123456789, price: 2000, teacherUid: "https://firebasestorage.googleapis.com:443/v0/b/linktutor-22f14.appspot.com/o/students%2F5OYog91j2HYFjY3va5vQ356fJ9W2.jpg?alt=media&token=a42b28c3-8d89-4a08-a975-649787509045")
+    classPreviewCard(academy: "unknown's Acadmey", className: "Unknown", phoneNumber: 123456789, price: 2000, teacherUid: "1")
 }

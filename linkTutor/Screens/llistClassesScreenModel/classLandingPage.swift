@@ -34,7 +34,7 @@ struct classLandingPage: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
+            VStack {
                 VStack {
                     // Header
                     HStack {
@@ -50,6 +50,7 @@ struct classLandingPage: View {
                                     .font(AppFont.mediumReg)
                             }
                         }
+                        .padding(.horizontal)
                         Spacer()
                     }
 
@@ -61,16 +62,11 @@ struct classLandingPage: View {
                                 HStack {
                                     Text("4.0 ⭐️")
                                         .font(AppFont.smallReg)
-                                        .padding([.top, .bottom], 4)
-                                        .padding([.leading, .trailing], 8)
-                                        .foregroundStyle(Color.black)
-                                        .background(.white)
-                                        .cornerRadius(50)
-                                        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 12)
+                                        .foregroundStyle(Color.white)
                                     Text("40 reviews")
                                         .font(AppFont.smallReg)
                                         .padding(.leading)
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(.white).opacity(0.7)
                                     Spacer()
                                 }
 
@@ -127,7 +123,7 @@ struct classLandingPage: View {
                                                 .padding(10)
                                                 .padding([.leading, .trailing], 20)
                                         }
-                                        .background(Color.green)
+                                        .background(Color.accent)
                                         .cornerRadius(20)
                                         .padding([.top, .bottom], 10)
                                     }
@@ -150,7 +146,7 @@ struct classLandingPage: View {
                                         Image(systemName: "phone.fill")
                                             .font(.system(size: 17))
 
-                                        Text("\(teacherDetails.phoneNumber)")
+                                        Text(String("\(teacherDetails.phoneNumber)"))
                                             .font(AppFont.actionButton)
                                     }
                                     .padding([.top, .bottom], 6)

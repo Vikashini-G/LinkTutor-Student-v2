@@ -29,7 +29,7 @@ struct quickInfoCard: View{
                     .font(AppFont.smallSemiBold)
 //                    .foregroundColor(.gray)
                 HStack{
-                    Text("\(startTime)")
+                    Text("\(startTime) - \(endTime)")
                         .padding(.trailing, 10)
                     Text("\(endTime)")
                     Spacer()

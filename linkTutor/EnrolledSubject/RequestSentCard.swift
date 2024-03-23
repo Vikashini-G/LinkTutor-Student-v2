@@ -39,6 +39,7 @@ struct RequestSentCard: View {
                         
                     }) {
                         Text("Delete")
+                            .font(AppFont.actionButton)
                             .frame(minWidth: 90, minHeight: 30)
                             .background(Color.red)
                             .foregroundColor(.white)

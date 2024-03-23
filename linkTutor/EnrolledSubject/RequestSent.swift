@@ -21,12 +21,11 @@ struct RequestSent: View {
                 HStack{
                     Text("Request")
                         .font(AppFont.largeBold)
-                        .padding()
                     Spacer()
                 }
                 let userId = Auth.auth().currentUser?.uid
                 
-                VStack {
+                VStack(spacing: 10) {
                     ForEach(viewModel.enrolledStudents.filter { $0.studentUid == userId && $0.requestAccepted == 0 }, id: \.id) { student in
                         RequestSentCard(teacherName: student.teacherName, phoneNumber: student.teacherNumber, id: student.id, className: student.className)
                     }
@@ -36,7 +35,7 @@ struct RequestSent: View {
                         }
                     }
                 }
-                .padding()
+//                .padding()
                 .onAppear {
                     viewModel.fetchEnrolledStudents()
                 }
@@ -47,6 +46,7 @@ struct RequestSent: View {
                 
                 Spacer()
             } //v end
+            .padding()
             .background(Color.background)
         } //nav end
     }

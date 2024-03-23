@@ -20,12 +20,13 @@ struct enrolledSubjectList: View {
         NavigationStack{
             VStack {
                 HStack{
-                    Text("Enrolled Subject").font(AppFont.largeBold)
+                    Text("Enrolled Subject")
+                        .font(AppFont.largeBold)
                     Spacer()
                 }
                 let userId = Auth.auth().currentUser?.uid
                 
-                VStack {
+                VStack(spacing: 10){
                     ForEach(viewModel.enrolledStudents.filter { $0.studentUid == userId  && $0.requestAccepted == 1 }, id: \.id) { student in
                         enrolledSubjectCard(teacherName: student.teacherName, phoneNumber: student.teacherNumber, id: student.id, className: student.className)
                     }
@@ -35,7 +36,7 @@ struct enrolledSubjectList: View {
                         }
                     }
                 }
-                .padding()
+//                .padding()
                 .onAppear {
                     viewModel.fetchEnrolledStudents()
                 }
