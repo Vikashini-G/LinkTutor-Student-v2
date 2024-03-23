@@ -81,22 +81,6 @@ struct homeScreen: View{
                         //explore classes cards
                         allPopularCard()
                         
-//                        ScrollView(.horizontal, showsIndicators: false){
-//                            HStack(spacing : 10){
-//                                ForEach(skillViewModel.skillTypes.prefix(3)) { skillType in
-//                                    let skillTypeName: String = skillType.id
-//                                    NavigationLink(destination: listClassesScreen(skillType: skillType)) {
-//                                        popularClassCardV(skillId: skillTypeName.prefix(1).capitalized + skillTypeName.dropFirst(), iconName: "book")
-//                                    }
-//                                }
-//                                
-//                                
-//                            }
-//                            
-//                            
-//                            Spacer()
-//                        }
-                        
                         Spacer().frame(height: 150)
                         
                         HStack{

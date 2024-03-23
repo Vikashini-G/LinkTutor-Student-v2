@@ -40,7 +40,7 @@ struct enrolledSubjectList: View {
                     viewModel.fetchEnrolledStudents()
                 }
                 Spacer()
-            }
+            } //vend
             .padding()
             .background(Color.background)
         }
